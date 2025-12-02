@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Score Sheet</string>
+    <string name="title_activity_main">Score Sheet</string>
+    <string name="package_name">com.example.scoresheet</string>
+    <string name="custom_url_scheme">com.example.scoresheet</string>
+</resources>
