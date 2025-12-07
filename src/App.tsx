@@ -1,9 +1,9 @@
-import { YouTubePlayer } from '@/components/YouTubePlayer'
 import styles from '@/App.module.scss'
+import RetrospectivePage from "@/pages/RetrospectivePage.tsx";
 
 function App() {
   return <div className={styles.container}>
-      <YouTubePlayer videoId="FO6P4FoLRPU" />
+      <RetrospectivePage videoId={"FO6P4FoLRPU"} />
   </div>
 }
 

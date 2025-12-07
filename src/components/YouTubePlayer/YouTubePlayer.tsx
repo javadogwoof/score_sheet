@@ -8,7 +8,7 @@ export function YouTubePlayer({ videoId }: YouTubePlayerProps) {
   return (
     <iframe
       className={styles.iframe}
-      src={`https://javadogwoof.github.io/score_sheet/?v=${videoId}`}
+      src={`https://score-sheet.taiga221-develop.workers.dev/?v=${videoId}`}
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
     />
   )
