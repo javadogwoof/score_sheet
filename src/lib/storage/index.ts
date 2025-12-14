@@ -4,13 +4,17 @@
  */
 
 import { mockStorageAdapter } from './mock-adapter';
-// import { sqliteStorageAdapter } from './sqlite-adapter';
+import { sqliteStorageAdapter } from './sqlite-adapter';
 import type { StorageAdapter } from './types';
+import {Capacitor} from "@capacitor/core";
 
 // 使用する実装を選択（環境変数などで切り替えることも可能）
-export const storage: StorageAdapter = mockStorageAdapter;
+// export const storage: StorageAdapter = mockStorageAdapter;
 // 将来的にSQLiteに切り替える場合：
-// export const storage: StorageAdapter = sqliteStorageAdapter;
+export const storage: StorageAdapter =
+    Capacitor.getPlatform() === 'web'
+        ? mockStorageAdapter
+        : sqliteStorageAdapter;
 
 // 初期化関数
 export const initializeStorage = async () => {
