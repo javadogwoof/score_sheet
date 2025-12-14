@@ -8,6 +8,10 @@
     font-family: "Hiragino Sans", "Arial", sans-serif;
 }
 
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     width: 100vw;
@@ -17,4 +21,8 @@ body {
 
 p {
     margin: 0;
+}
+
+button {
+    font-family: inherit;
 }

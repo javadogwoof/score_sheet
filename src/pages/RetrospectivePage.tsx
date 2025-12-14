@@ -8,10 +8,10 @@ interface RetrospectivePageType {
 const RetrospectivePage = ({videoId}: RetrospectivePageType) => {
     return <div className={styles.container}>
         <YouTubePlayer videoId={videoId} />
-        <p>
-            <span>hoge</span>
-            <span>fuga</span>
-        </p>
+        <form className={styles.form}>
+            <label className={styles.label} htmlFor="memo">メモ</label>
+            <textarea className={styles.memo} id={"memo"} />
+        </form>
     </div>
 }
 
