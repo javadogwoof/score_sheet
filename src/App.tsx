@@ -1,10 +1,19 @@
-import styles from '@/App.module.scss'
-import RetrospectivePage from "@/pages/RetrospectivePage.tsx";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import styles from '@/App.module.scss';
+import CalendarPage from '@/pages/CalendarPage';
+import RetrospectivePage from '@/pages/RetrospectivePage';
 
 function App() {
-  return <div className={styles.container}>
-      <RetrospectivePage videoId={"FO6P4FoLRPU"} />
-  </div>
+  return (
+    <BrowserRouter>
+      <div className={styles.container}>
+        <Routes>
+          <Route path="/" element={<CalendarPage />} />
+          <Route path="/retrospective/:date" element={<RetrospectivePage />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
