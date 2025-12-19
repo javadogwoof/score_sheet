@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { YouTubePlayer } from "@/components/YouTubePlayer";
+import { VideoWithMemo } from "@/components/VideoWithMemo";
+import { VideoUrlModal } from "@/components/VideoUrlModal";
 import { storage } from "@/lib/storage";
 import type { Retrospective } from "@/lib/storage";
 import styles from "./RetrospectivePage.module.scss";
@@ -10,43 +11,96 @@ const RetrospectivePage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState<Retrospective | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const loadData = useCallback(async () => {
+    if (!date) return;
+    setLoading(true);
+    try {
+      const retrospective = await storage.getRetrospective(date);
+      setData(retrospective);
+    } catch (error) {
+      console.error('Failed to load retrospective:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [date]);
 
   useEffect(() => {
-    const loadData = async () => {
-      if (!date) return;
-      setLoading(true);
-      try {
-        const retrospective = await storage.getRetrospective(date);
-        setData(retrospective);
-      } catch (error) {
-        console.error('Failed to load retrospective:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     loadData();
-  }, [date]);
+  }, [loadData]);
 
   const handleBack = () => {
     navigate("/");
   };
 
-  const handleSaveMemo = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSaveMemo = async (videoId: number, content: string) => {
     if (!date) return;
-
-    const formData = new FormData(e.currentTarget);
-    const content = formData.get('memo') as string;
 
     try {
       await storage.saveMemo({
         date,
         content,
+        video_id: videoId,
       });
-      alert('保存しました');
+
+      // データを再読み込み
+      await loadData();
     } catch (error) {
       console.error('Failed to save memo:', error);
-      alert('保存に失敗しました');
+      throw error;
+    }
+  };
+
+  const handleDeletePost = async (videoId: number) => {
+    if (!date) return;
+
+    try {
+      await storage.deletePost(date, videoId);
+
+      // データを再読み込み
+      await loadData();
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      throw error;
+    }
+  };
+
+  const handleVideoUrlSubmit = async (videoId: string) => {
+    if (!date) return;
+
+    try {
+      // 動画を保存
+      const savedVideoId = await storage.saveVideo({
+        type: 'youtube',
+        source: videoId,
+      });
+
+      // ふりかえりに動画を紐付け
+      const retrospective = await storage.getRetrospective(date);
+      const videos = retrospective?.videos || [];
+      const memos = retrospective?.memos || [];
+
+      // 動画がまだ追加されていない場合のみ追加
+      if (!videos.find((v) => v.id === savedVideoId)) {
+        videos.push({
+          id: savedVideoId,
+          type: 'youtube',
+          source: videoId,
+        });
+      }
+
+      await storage.saveRetrospective({
+        date,
+        videos,
+        memos,
+      });
+
+      // データを再読み込み
+      await loadData();
+    } catch (error) {
+      console.error('Failed to save video:', error);
+      alert('動画の保存に失敗しました');
     }
   };
 
@@ -63,36 +117,41 @@ const RetrospectivePage = () => {
         <h2 className={styles.date}>{date}</h2>
       </div>
 
-      {data?.videos && data.videos.length > 0 && (
-        <div className={styles.videoSection}>
-          {data.videos.map((video) => (
-            <div key={video.id} className={styles.videoWrapper}>
-              {video.type === 'youtube' && (
-                <YouTubePlayer videoId={video.source} />
-              )}
-              {video.type === 'local' && (
-                <div>ローカル動画: {video.title || video.source}</div>
-              )}
-            </div>
-          ))}
+      {data?.videos && data.videos.length > 0 ? (
+        <div className={styles.videosSection}>
+          {data.videos.map((video) => {
+            // この動画に紐づくメモを探す
+            const memo = data.memos.find((m) => m.video_id === video.id);
+
+            return (
+              <VideoWithMemo
+                key={video.id}
+                video={video}
+                memo={memo}
+                onSaveMemo={(content) => handleSaveMemo(video.id!, content)}
+                onDelete={() => handleDeletePost(video.id!)}
+              />
+            );
+          })}
+
+          <button className={styles.addVideoButton} onClick={() => setIsModalOpen(true)}>
+            ＋ 動画を追加
+          </button>
+        </div>
+      ) : (
+        <div className={styles.emptyState}>
+          <p>まだ動画が追加されていません</p>
+          <button className={styles.addVideoButtonPrimary} onClick={() => setIsModalOpen(true)}>
+            ＋ 動画を追加
+          </button>
         </div>
       )}
 
-      <form className={styles.form} onSubmit={handleSaveMemo}>
-        <label className={styles.label} htmlFor="memo">
-          メモ
-        </label>
-        <textarea
-          className={styles.memo}
-          id="memo"
-          name="memo"
-          defaultValue={data?.memos[0]?.content || ""}
-          placeholder="ふりかえりのメモを入力..."
-        />
-        <button type="submit" className={styles.saveButton}>
-          保存
-        </button>
-      </form>
+      <VideoUrlModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleVideoUrlSubmit}
+      />
     </div>
   );
 };

@@ -68,4 +68,9 @@ export interface StorageAdapter {
    * 指定日付のメモ一覧を取得
    */
   getMemosByDate(date: string): Promise<Memo[]>;
+
+  /**
+   * 投稿（動画とそれに紐づくメモ）を削除
+   */
+  deletePost(date: string, videoId: number): Promise<void>;
 }

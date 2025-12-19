@@ -246,6 +246,37 @@ class SQLiteStorageAdapter implements StorageAdapter {
       throw error;
     }
   }
+
+  async deletePost(date: string, videoId: number): Promise<void> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    try {
+      // retrospective_videosから削除（これにより動画との関連が削除される）
+      await this.db.run(
+        'DELETE FROM retrospective_videos WHERE date = ? AND video_id = ?',
+        [date, videoId]
+      );
+
+      // 動画に紐づくメモを削除
+      await this.db.run(
+        'DELETE FROM memos WHERE date = ? AND video_id = ?',
+        [date, videoId]
+      );
+
+      // 他の日付で参照されていない動画は削除
+      const result = await this.db.query(
+        'SELECT COUNT(*) as count FROM retrospective_videos WHERE video_id = ?',
+        [videoId]
+      );
+
+      if (result.values && result.values[0].count === 0) {
+        await this.db.run('DELETE FROM videos WHERE id = ?', [videoId]);
+      }
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      throw error;
+    }
+  }
 }
 
 export const sqliteStorageAdapter = new SQLiteStorageAdapter();
