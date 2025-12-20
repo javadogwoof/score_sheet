@@ -5,11 +5,6 @@
 
 export interface CalendarProps {
   /**
-   * 選択された日付
-   */
-  value?: Date;
-
-  /**
    * 日付が選択されたときのコールバック
    */
   onDateSelect: (date: Date) => void;

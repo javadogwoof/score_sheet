@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar } from '@/components/Calendar';
+import Calendar from '@/components/Calendar';
 import { VideoUrlModal } from '@/components/VideoUrlModal';
 import { formatDate } from '@/lib/date';
 import { storage } from '@/lib/storage';
 import styles from './CalendarPage.module.scss';
 
 const CalendarPage = () => {
-  const [value, setValue] = useState<Date>(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleDateSelect = (date: Date) => {
-    setValue(date);
     const dateStr = formatDate(date, 'YYYY-MM-DD');
     navigate(`/retrospective/${dateStr}`);
   };
@@ -69,10 +67,9 @@ const CalendarPage = () => {
 
       <div className={styles.calendarWrapper}>
         <Calendar
-          onDateSelect={handleDateSelect}
-          value={value}
           locale="ja-JP"
           className={styles.calendar}
+          onDateSelect={handleDateSelect}
         />
       </div>
 
