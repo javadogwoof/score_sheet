@@ -23,6 +23,7 @@
     "@capacitor/ios": "^7.4.4",
     "dayjs": "^1.11.19",
     "jeep-sqlite": "^2.8.0",
+    "posthog-js": "^1.309.1",
     "react": "^19.2.0",
     "react-calendar": "^6.0.0",
     "react-dom": "^19.2.0",
