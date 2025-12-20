@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { VideoUrlModal } from '@/components/VideoUrlModal';
 import { VideoUrlModalContext } from './context';
 

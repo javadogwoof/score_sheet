@@ -7,8 +7,14 @@ import type { StorageAdapter, Retrospective, Memo, Video } from './types';
 
 class MockStorageAdapter implements StorageAdapter {
   private data: Map<string, Retrospective> = new Map();
+  private isInitialized = false;
 
   async initialize(): Promise<void> {
+    // すでに初期化済みの場合はスキップ
+    if (this.isInitialized) {
+      return;
+    }
+
     // モックデータの初期化
     this.data.set('2025-12-14', {
       date: '2025-12-14',
@@ -29,6 +35,8 @@ class MockStorageAdapter implements StorageAdapter {
         },
       ],
     });
+
+    this.isInitialized = true;
   }
 
   async getRetrospective(date: string): Promise<Retrospective | null> {

@@ -7,23 +7,18 @@ import { initializeStorage } from '@/lib/storage'
 const root = createRoot(document.getElementById('root')!)
 
 // ストレージを初期化してからアプリを起動
-initializeStorage()
-  .then(() => {
-    console.log('Storage initialized successfully')
+try {
+    await initializeStorage()
     root.render(
-      <StrictMode>
-        <App />
-      </StrictMode>,
+        <StrictMode>
+            <App />
+        </StrictMode>,
     )
-  })
-  .catch((error) => {
-    console.error('Failed to initialize storage:', error)
-    // エラーが発生してもUIを表示
+} catch {
     root.render(
-      <div style={{ padding: '20px', color: 'red' }}>
-        <h1>ストレージの初期化に失敗しました</h1>
-        <pre>{error?.message || String(error)}</pre>
-        <p>開発者ツールのコンソールを確認してください。</p>
-      </div>
+        <div style={{ padding: '20px', color: 'red' }}>
+            <h2>起動に失敗しました</h2>
+            <p>アプリを起動し直してください。</p>
+        </div>
     )
-  })
+}

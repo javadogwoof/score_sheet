@@ -13,8 +13,32 @@ const DB_VERSION = 1;
 class SQLiteStorageAdapter implements StorageAdapter {
   private sqliteConnection: SQLiteConnection | null = null;
   private db: SQLiteDBConnection | null = null;
+  private isInitialized = false;
+  private initializationPromise: Promise<void> | null = null;
 
   async initialize(): Promise<void> {
+    // すでに初期化済みの場合はスキップ
+    if (this.isInitialized) {
+      return;
+    }
+
+    // 初期化中の場合は、その完了を待つ
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+
+    // 初期化を開始
+    this.initializationPromise = this.performInitialization();
+
+    try {
+      await this.initializationPromise;
+      this.isInitialized = true;
+    } finally {
+      this.initializationPromise = null;
+    }
+  }
+
+  private async performInitialization(): Promise<void> {
     try {
       // SQLite接続の初期化
       this.sqliteConnection = new SQLiteConnection(CapacitorSQLite);
@@ -41,6 +65,10 @@ class SQLiteStorageAdapter implements StorageAdapter {
       console.log('SQLite initialized successfully');
     } catch (error) {
       console.error('Failed to initialize SQLite:', error);
+      // 失敗した場合は状態をリセット
+      this.isInitialized = false;
+      this.db = null;
+      this.sqliteConnection = null;
       throw error;
     }
   }
