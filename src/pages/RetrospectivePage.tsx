@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { VideoWithMemo } from "@/components/VideoWithMemo";
-import { VideoUrlModal } from "@/components/VideoUrlModal";
+import { useVideoUrlModal } from "@/contexts/VideoUrlModalContext";
 import { storage } from "@/lib/storage";
 import type { Retrospective } from "@/lib/storage";
 import styles from "./RetrospectivePage.module.scss";
@@ -9,9 +9,9 @@ import styles from "./RetrospectivePage.module.scss";
 const RetrospectivePage = () => {
   const { date } = useParams<{ date: string }>();
   const navigate = useNavigate();
+  const { openModal } = useVideoUrlModal();
   const [data, setData] = useState<Retrospective | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!date) return;
@@ -66,42 +66,44 @@ const RetrospectivePage = () => {
     }
   };
 
-  const handleVideoUrlSubmit = async (videoId: string) => {
+  const handleAddVideo = () => {
     if (!date) return;
 
-    try {
-      // 動画を保存
-      const savedVideoId = await storage.saveVideo({
-        type: 'youtube',
-        source: videoId,
-      });
-
-      // ふりかえりに動画を紐付け
-      const retrospective = await storage.getRetrospective(date);
-      const videos = retrospective?.videos || [];
-      const memos = retrospective?.memos || [];
-
-      // 動画がまだ追加されていない場合のみ追加
-      if (!videos.find((v) => v.id === savedVideoId)) {
-        videos.push({
-          id: savedVideoId,
+    openModal(async (videoId: string) => {
+      try {
+        // 動画を保存
+        const savedVideoId = await storage.saveVideo({
           type: 'youtube',
           source: videoId,
         });
+
+        // ふりかえりに動画を紐付け
+        const retrospective = await storage.getRetrospective(date);
+        const videos = retrospective?.videos || [];
+        const memos = retrospective?.memos || [];
+
+        // 動画がまだ追加されていない場合のみ追加
+        if (!videos.find((v) => v.id === savedVideoId)) {
+          videos.push({
+            id: savedVideoId,
+            type: 'youtube',
+            source: videoId,
+          });
+        }
+
+        await storage.saveRetrospective({
+          date,
+          videos,
+          memos,
+        });
+
+        // データを再読み込み
+        await loadData();
+      } catch (error) {
+        console.error('Failed to save video:', error);
+        alert('動画の保存に失敗しました');
       }
-
-      await storage.saveRetrospective({
-        date,
-        videos,
-        memos,
-      });
-
-      // データを再読み込み
-      await loadData();
-    } catch (error) {
-      console.error('Failed to save video:', error);
-      alert('動画の保存に失敗しました');
-    }
+    });
   };
 
   if (loading) {
@@ -134,24 +136,18 @@ const RetrospectivePage = () => {
             );
           })}
 
-          <button className={styles.addVideoButton} onClick={() => setIsModalOpen(true)}>
+          <button className={styles.addVideoButton} onClick={handleAddVideo}>
             ＋ 動画を追加
           </button>
         </div>
       ) : (
         <div className={styles.emptyState}>
           <p>まだ動画が追加されていません</p>
-          <button className={styles.addVideoButtonPrimary} onClick={() => setIsModalOpen(true)}>
+          <button className={styles.addVideoButtonPrimary} onClick={handleAddVideo}>
             ＋ 動画を追加
           </button>
         </div>
       )}
-
-      <VideoUrlModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleVideoUrlSubmit}
-      />
     </div>
   );
 };

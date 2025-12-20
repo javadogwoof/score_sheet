@@ -1,14 +1,13 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Calendar from '@/components/Calendar';
-import { VideoUrlModal } from '@/components/VideoUrlModal';
+import { useVideoUrlModal } from '@/contexts/VideoUrlModalContext';
 import { formatDate } from '@/lib/date';
 import { storage } from '@/lib/storage';
 import styles from './CalendarPage.module.scss';
 
 const CalendarPage = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { openModal } = useVideoUrlModal();
 
   const handleDateSelect = (date: Date) => {
     const dateStr = formatDate(date, 'YYYY-MM-DD');
@@ -16,45 +15,43 @@ const CalendarPage = () => {
   };
 
   const handleStartTodayRetrospective = () => {
-    setIsModalOpen(true);
-  };
+    openModal(async (videoId: string) => {
+      const today = formatDate(new Date(), 'YYYY-MM-DD');
 
-  const handleVideoUrlSubmit = async (videoId: string) => {
-    const today = formatDate(new Date(), 'YYYY-MM-DD');
-
-    try {
-      // 動画を保存
-      const savedVideoId = await storage.saveVideo({
-        type: 'youtube',
-        source: videoId,
-      });
-
-      // ふりかえりに動画を紐付け
-      const retrospective = await storage.getRetrospective(today);
-      const videos = retrospective?.videos || [];
-      const memos = retrospective?.memos || [];
-
-      // 動画がまだ追加されていない場合のみ追加
-      if (!videos.find((v) => v.id === savedVideoId)) {
-        videos.push({
-          id: savedVideoId,
+      try {
+        // 動画を保存
+        const savedVideoId = await storage.saveVideo({
           type: 'youtube',
           source: videoId,
         });
+
+        // ふりかえりに動画を紐付け
+        const retrospective = await storage.getRetrospective(today);
+        const videos = retrospective?.videos || [];
+        const memos = retrospective?.memos || [];
+
+        // 動画がまだ追加されていない場合のみ追加
+        if (!videos.find((v) => v.id === savedVideoId)) {
+          videos.push({
+            id: savedVideoId,
+            type: 'youtube',
+            source: videoId,
+          });
+        }
+
+        await storage.saveRetrospective({
+          date: today,
+          videos,
+          memos,
+        });
+
+        // 今日の振り返りページに遷移
+        navigate(`/retrospective/${today}`);
+      } catch (error) {
+        console.error('Failed to save video:', error);
+        alert('動画の保存に失敗しました');
       }
-
-      await storage.saveRetrospective({
-        date: today,
-        videos,
-        memos,
-      });
-
-      // 今日の振り返りページに遷移
-      navigate(`/retrospective/${today}`);
-    } catch (error) {
-      console.error('Failed to save video:', error);
-      alert('動画の保存に失敗しました');
-    }
+    });
   };
 
   return (
@@ -72,12 +69,6 @@ const CalendarPage = () => {
           onDateSelect={handleDateSelect}
         />
       </div>
-
-      <VideoUrlModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleVideoUrlSubmit}
-      />
     </div>
   );
 };
