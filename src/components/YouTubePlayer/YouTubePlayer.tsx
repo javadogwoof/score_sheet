@@ -9,7 +9,7 @@ export function YouTubePlayer({ videoId }: YouTubePlayerProps) {
     <iframe
       className={styles.iframe}
       src={`https://score-sheet.taiga221-develop.workers.dev/?v=${videoId}`}
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
     />
   )
 }

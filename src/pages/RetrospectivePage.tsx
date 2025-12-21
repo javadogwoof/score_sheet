@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { VideoWithMemo } from "@/components/VideoWithMemo";
 import { useVideoUrlModal } from "@/contexts/VideoUrlModalContext";
+import { useAddVideoToDate } from "@/hooks/useAddVideoToDate";
 import { storage } from "@/lib/storage";
 import type { Retrospective } from "@/lib/storage";
 import styles from "./RetrospectivePage.module.scss";
@@ -10,6 +11,7 @@ const RetrospectivePage = () => {
   const { date } = useParams<{ date: string }>();
   const navigate = useNavigate();
   const { openModal } = useVideoUrlModal();
+  const addVideoToDate = useAddVideoToDate();
   const [data, setData] = useState<Retrospective | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,33 +73,7 @@ const RetrospectivePage = () => {
 
     openModal(async (videoId: string) => {
       try {
-        // 動画を保存
-        const savedVideoId = await storage.saveVideo({
-          type: 'youtube',
-          source: videoId,
-        });
-
-        // ふりかえりに動画を紐付け
-        const retrospective = await storage.getRetrospective(date);
-        const videos = retrospective?.videos || [];
-        const memos = retrospective?.memos || [];
-
-        // 動画がまだ追加されていない場合のみ追加
-        if (!videos.find((v) => v.id === savedVideoId)) {
-          videos.push({
-            id: savedVideoId,
-            type: 'youtube',
-            source: videoId,
-          });
-        }
-
-        await storage.saveRetrospective({
-          date,
-          videos,
-          memos,
-        });
-
-        // データを再読み込み
+        await addVideoToDate(date, videoId);
         await loadData();
       } catch (error) {
         console.error('Failed to save video:', error);
