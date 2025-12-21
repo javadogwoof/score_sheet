@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
+import { AppMain } from '@/components/AppMain';
 import Calendar from '@/components/Calendar';
 import { formatDate } from '@/lib/date';
 import styles from './MonthlyPage.module.scss';
@@ -15,14 +16,15 @@ const MonthlyPage = () => {
   return (
     <div className={styles.container}>
       <AppHeader title="ふりかえりカレンダー" />
-
-      <div className={styles.calendarWrapper}>
-        <Calendar
-          locale="ja-JP"
-          className={styles.calendar}
-          onDateSelect={handleDateSelect}
-        />
-      </div>
+      <AppMain>
+        <div className={styles.calendarWrapper}>
+          <Calendar
+            locale="ja-JP"
+            className={styles.calendar}
+            onDateSelect={handleDateSelect}
+          />
+        </div>
+      </AppMain>
     </div>
   );
 };

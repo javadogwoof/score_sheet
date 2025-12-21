@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
+import { useNavigate } from 'react-router-dom';
 import styles from './AppHeader.module.scss';
 
 interface AppHeaderProps {
