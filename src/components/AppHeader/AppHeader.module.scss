@@ -1,9 +1,12 @@
 .header {
+  position: sticky;
+  top: 0;
   width: 100%;
   padding: 16px;
   background: white;
   border-bottom: 1px solid #e0e0e0;
   box-sizing: border-box;
+  z-index: 100;
 }
 
 .headerContent {
