@@ -1,3 +1,4 @@
+import type * as React from 'react';
 import { useState } from 'react';
 import { extractYouTubeVideoId, isValidYouTubeVideoId } from '@/lib/youtube';
 import styles from './VideoUrlModal.module.scss';
@@ -8,7 +9,11 @@ interface VideoUrlModalProps {
   onSubmit: (videoId: string) => void;
 }
 
-export const VideoUrlModal = ({ isOpen, onClose, onSubmit }: VideoUrlModalProps) => {
+export const VideoUrlModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+}: VideoUrlModalProps) => {
   const [url, setUrl] = useState('');
   const [error, setError] = useState('');
 
@@ -25,7 +30,7 @@ export const VideoUrlModal = ({ isOpen, onClose, onSubmit }: VideoUrlModalProps)
       return;
     }
 
-    onSubmit(videoId!);
+    onSubmit(videoId);
     setUrl('');
     onClose();
   };
@@ -37,11 +42,26 @@ export const VideoUrlModal = ({ isOpen, onClose, onSubmit }: VideoUrlModalProps)
   };
 
   return (
-    <div className={styles.overlay} onClick={handleClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+    <div
+      className={styles.overlay}
+      onClick={handleClose}
+      onKeyDown={(e) => e.key === 'Escape' && handleClose()}
+      role="presentation"
+    >
+      <div
+        className={styles.modal}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+      >
         <div className={styles.header}>
           <h2 className={styles.title}>動画URLを入力</h2>
-          <button className={styles.closeButton} onClick={handleClose}>
+          <button
+            type="button"
+            className={styles.closeButton}
+            onClick={handleClose}
+          >
             ×
           </button>
         </div>
@@ -58,7 +78,6 @@ export const VideoUrlModal = ({ isOpen, onClose, onSubmit }: VideoUrlModalProps)
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://www.youtube.com/watch?v=..."
-              autoFocus
             />
             {error && <p className={styles.error}>{error}</p>}
           </div>
@@ -73,7 +92,11 @@ export const VideoUrlModal = ({ isOpen, onClose, onSubmit }: VideoUrlModalProps)
           </div>
 
           <div className={styles.actions}>
-            <button type="button" className={styles.cancelButton} onClick={handleClose}>
+            <button
+              type="button"
+              className={styles.cancelButton}
+              onClick={handleClose}
+            >
               キャンセル
             </button>
             <button type="submit" className={styles.submitButton}>

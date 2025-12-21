@@ -3,7 +3,12 @@
  * 実際のストレージの代わりにメモリ上でデータを管理
  */
 
-import type { StorageAdapter, Retrospective, Memo, Video } from './types';
+import type {
+  Memo,
+  Retrospective,
+  StorageAdapter,
+  YoutubeVideoIdDTO,
+} from './types';
 
 class MockStorageAdapter implements StorageAdapter {
   private data: Map<string, Retrospective> = new Map();
@@ -52,7 +57,7 @@ class MockStorageAdapter implements StorageAdapter {
     if (retro) {
       // 同じvideo_idを持つメモを探す
       const existingMemoIndex = retro.memos.findIndex(
-        (m) => m.video_id === memo.video_id
+        (m) => m.video_id === memo.video_id,
       );
 
       if (existingMemoIndex >= 0) {
@@ -76,13 +81,13 @@ class MockStorageAdapter implements StorageAdapter {
     }
   }
 
-  async saveVideo(video: Video): Promise<number> {
+  async saveVideo(video: YoutubeVideoIdDTO): Promise<number> {
     const id = Date.now(); // 簡易的なID生成
     video.id = id;
     return id;
   }
 
-  async getVideosByDate(date: string): Promise<Video[]> {
+  async getVideosByDate(date: string): Promise<YoutubeVideoIdDTO[]> {
     const retro = this.data.get(date);
     return retro?.videos || [];
   }

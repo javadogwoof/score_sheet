@@ -3,9 +3,18 @@
  * @capacitor-community/sqliteを使用
  */
 
-import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 import { Capacitor } from '@capacitor/core';
-import type { StorageAdapter, Retrospective, Memo, Video } from './types';
+import {
+  CapacitorSQLite,
+  SQLiteConnection,
+  type SQLiteDBConnection,
+} from '@capacitor-community/sqlite';
+import type {
+  Memo,
+  Retrospective,
+  StorageAdapter,
+  YoutubeVideoIdDTO,
+} from './types';
 
 const DB_NAME = 'scoresheet.db';
 const DB_VERSION = 1;
@@ -54,7 +63,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
         false,
         'no-encryption',
         DB_VERSION,
-        false
+        false,
       );
 
       await this.db.open();
@@ -154,7 +163,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
         // retrospective_videosテーブルに関連付けを保存
         await this.db.run(
           'INSERT OR IGNORE INTO retrospective_videos (date, video_id) VALUES (?, ?)',
-          [retrospective.date, videoId]
+          [retrospective.date, videoId],
         );
       }
 
@@ -178,14 +187,24 @@ class SQLiteStorageAdapter implements StorageAdapter {
           `UPDATE memos
            SET content = ?, video_id = ?, timestamp = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
-          [memo.content, memo.video_id || null, memo.timestamp || null, memo.id]
+          [
+            memo.content,
+            memo.video_id || null,
+            memo.timestamp || null,
+            memo.id,
+          ],
         );
       } else {
         // 新規作成
         await this.db.run(
           `INSERT INTO memos (date, content, video_id, timestamp)
            VALUES (?, ?, ?, ?)`,
-          [memo.date, memo.content, memo.video_id || null, memo.timestamp || null]
+          [
+            memo.date,
+            memo.content,
+            memo.video_id || null,
+            memo.timestamp || null,
+          ],
         );
       }
     } catch (error) {
@@ -194,7 +213,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
     }
   }
 
-  async saveVideo(video: Video): Promise<number> {
+  async saveVideo(video: YoutubeVideoIdDTO): Promise<number> {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
@@ -204,7 +223,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
           `UPDATE videos
            SET type = ?, source = ?, title = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
-          [video.type, video.source, video.title || null, video.id]
+          [video.type, video.source, video.title || null, video.id],
         );
         return video.id;
       } else {
@@ -212,7 +231,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
         const result = await this.db.run(
           `INSERT INTO videos (type, source, title)
            VALUES (?, ?, ?)`,
-          [video.type, video.source, video.title || null]
+          [video.type, video.source, video.title || null],
         );
 
         return result.changes?.lastId || 0;
@@ -223,7 +242,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
     }
   }
 
-  async getVideosByDate(date: string): Promise<Video[]> {
+  async getVideosByDate(date: string): Promise<YoutubeVideoIdDTO[]> {
     if (!this.db) throw new Error('Database not initialized');
 
     try {
@@ -232,7 +251,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
          INNER JOIN retrospective_videos rv ON v.id = rv.video_id
          WHERE rv.date = ?
          ORDER BY v.created_at DESC`,
-        [date]
+        [date],
       );
 
       return (result.values || []).map((row) => ({
@@ -257,7 +276,7 @@ class SQLiteStorageAdapter implements StorageAdapter {
         `SELECT * FROM memos
          WHERE date = ?
          ORDER BY created_at DESC`,
-        [date]
+        [date],
       );
 
       return (result.values || []).map((row) => ({
@@ -282,19 +301,19 @@ class SQLiteStorageAdapter implements StorageAdapter {
       // retrospective_videosから削除（これにより動画との関連が削除される）
       await this.db.run(
         'DELETE FROM retrospective_videos WHERE date = ? AND video_id = ?',
-        [date, videoId]
+        [date, videoId],
       );
 
       // 動画に紐づくメモを削除
-      await this.db.run(
-        'DELETE FROM memos WHERE date = ? AND video_id = ?',
-        [date, videoId]
-      );
+      await this.db.run('DELETE FROM memos WHERE date = ? AND video_id = ?', [
+        date,
+        videoId,
+      ]);
 
       // 他の日付で参照されていない動画は削除
       const result = await this.db.query(
         'SELECT COUNT(*) as count FROM retrospective_videos WHERE video_id = ?',
-        [videoId]
+        [videoId],
       );
 
       if (result.values && result.values[0].count === 0) {

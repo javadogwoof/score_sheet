@@ -2,9 +2,8 @@
  * データモデルの型定義
  */
 
-export interface Video {
+export interface YoutubeVideoIdDTO {
   id?: number;
-  type: 'youtube' | 'local';
   source: string; // YouTube video ID or local video URI
   title?: string;
   created_at?: string;
@@ -25,7 +24,7 @@ export interface Retrospective {
   id?: number;
   video_id?: number;
   date: string; // YYYY-MM-DD format
-  videos: Video[];
+  videos: YoutubeVideoIdDTO[];
   memos: Memo[];
 }
 
@@ -57,12 +56,12 @@ export interface StorageAdapter {
   /**
    * 動画を保存
    */
-  saveVideo(video: Video): Promise<number>; // returns video id
+  saveVideo(video: YoutubeVideoIdDTO): Promise<number>; // returns video id
 
   /**
    * 指定日付の動画一覧を取得
    */
-  getVideosByDate(date: string): Promise<Video[]>;
+  getVideosByDate(date: string): Promise<YoutubeVideoIdDTO[]>;
 
   /**
    * 指定日付のメモ一覧を取得

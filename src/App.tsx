@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { VideoUrlModalProvider } from '@/contexts/VideoUrlModalContext';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import styles from '@/App.module.scss';
+import { VideoUrlModalProvider } from '@/contexts/VideoUrlModalContext';
 import CalendarPage from '@/pages/CalendarPage';
 import RetrospectivePage from '@/pages/RetrospectivePage';
 
@@ -11,7 +11,10 @@ function App() {
         <div className={styles.container}>
           <Routes>
             <Route path="/" element={<CalendarPage />} />
-            <Route path="/retrospective/:date" element={<RetrospectivePage />} />
+            <Route
+              path="/retrospective/:date"
+              element={<RetrospectivePage />}
+            />
           </Routes>
         </div>
       </VideoUrlModalProvider>

@@ -1,6 +1,6 @@
 pre-commit:
   parallel: true
   commands:
-    lint:
-      glob: "*.{ts,tsx,js,jsx}"
-      run: npx eslint {staged_files}
+    biome:
+      glob: "*.{ts,tsx,js,jsx,json,jsonc}"
+      run: npx @biomejs/biome check --write --unsafe {staged_files}
