@@ -5,14 +5,14 @@ import MonthlyPage from '@/pages/MonthlyPage';
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className={styles.container}>
+    <div className={styles.container}>
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<MonthlyPage />} />
           <Route path="/daily/:date" element={<DailyPage />} />
         </Routes>
-      </div>
-    </BrowserRouter>
+      </BrowserRouter>
+    </div>
   );
 }
 
