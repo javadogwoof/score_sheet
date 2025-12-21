@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { AppHeader } from '@/components/AppHeader';
 import Calendar from '@/components/Calendar';
 import { formatDate } from '@/lib/date';
 import styles from './MonthlyPage.module.scss';
@@ -13,7 +14,7 @@ const MonthlyPage = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>ふりかえりカレンダー</h1>
+      <AppHeader title="ふりかえりカレンダー" />
 
       <div className={styles.calendarWrapper}>
         <Calendar

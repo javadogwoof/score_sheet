@@ -1,0 +1,56 @@
+.header {
+  width: 100%;
+  padding: 16px;
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  box-sizing: border-box;
+}
+
+.headerContent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backButton {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+
+  &:active {
+    background-color: #e0e0e0;
+  }
+}
+
+.titleContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #555;
+}
