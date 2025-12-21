@@ -1,8 +1,8 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { YouTubePlayer } from '@/components/YouTubePlayer';
-import styles from './RetrospectivePage.module.scss';
+import styles from './DailyPage.module.scss';
 
-const RetrospectivePage = () => {
+const DailyPage = () => {
   const { date } = useParams<{ date: string }>();
   const navigate = useNavigate();
 
@@ -28,4 +28,4 @@ const RetrospectivePage = () => {
   );
 };
 
-export default RetrospectivePage;
+export default DailyPage;

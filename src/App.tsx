@@ -1,15 +1,15 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import styles from '@/App.module.scss';
-import CalendarPage from '@/pages/CalendarPage';
-import RetrospectivePage from '@/pages/RetrospectivePage';
+import DailyPage from '@/pages/DailyPage';
+import MonthlyPage from '@/pages/MonthlyPage';
 
 function App() {
   return (
     <BrowserRouter>
       <div className={styles.container}>
         <Routes>
-          <Route path="/" element={<CalendarPage />} />
-          <Route path="/retrospective/:date" element={<RetrospectivePage />} />
+          <Route path="/" element={<MonthlyPage />} />
+          <Route path="/daily/:date" element={<DailyPage />} />
         </Routes>
       </div>
     </BrowserRouter>

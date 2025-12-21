@@ -1,14 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import Calendar from '@/components/Calendar';
 import { formatDate } from '@/lib/date';
-import styles from './CalendarPage.module.scss';
+import styles from './MonthlyPage.module.scss';
 
-const CalendarPage = () => {
+const MonthlyPage = () => {
   const navigate = useNavigate();
 
   const handleDateSelect = (date: Date) => {
     const dateStr = formatDate(date, 'YYYY-MM-DD');
-    navigate(`/retrospective/${dateStr}`);
+    navigate(`/daily/${dateStr}`);
   };
 
   return (
@@ -26,4 +26,4 @@ const CalendarPage = () => {
   );
 };
 
-export default CalendarPage;
+export default MonthlyPage;
