@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Reflection</string>
-    <string name="title_activity_main">Reflection</string>
+    <string name="app_name">volley note</string>
+    <string name="title_activity_main">volley note</string>
     <string name="package_name">com.nextrally.reflection</string>
     <string name="custom_url_scheme">com.nextrally.reflection</string>
 </resources>
