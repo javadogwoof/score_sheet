@@ -13,11 +13,6 @@ const MonthlyPage = () => {
     navigate(`/daily/${dateStr}`);
   };
 
-  // PostHogのエラートラッキングテスト用（開発環境のみ）
-  const testPostHogError = () => {
-    throw new Error('PostHog test error - this is intentional');
-  };
-
   return (
     <>
       <AppHeader title="ふりかえりカレンダー" />
@@ -25,25 +20,6 @@ const MonthlyPage = () => {
         <Card>
           <Calendar onDateSelect={handleDateSelect} />
         </Card>
-        <div style={{ padding: '16px', marginTop: '16px' }}>
-          <button
-            type="button"
-            onClick={testPostHogError}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#d32f2f',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Test PostHog Error Tracking
-          </button>
-          <p style={{ fontSize: '12px', color: '#666', marginTop: '8px' }}>
-            このボタンをクリックすると意図的にエラーを発生させ、PostHogに送信されます
-          </p>
-        </div>
       </AppMain>
     </>
   );
