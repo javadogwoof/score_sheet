@@ -1,8 +1,8 @@
 import posthog from 'posthog-js';
 
 export const initPostHog = () => {
-  const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
-  const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST;
+  const posthogKey = import.meta.env.VITE_PUBLIC_POSTHOG_KEY;
+  const posthogHost = import.meta.env.VITE_PUBLIC_POSTHOG_HOST;
 
   if (!posthogKey) {
     console.warn('PostHog API key not found. Analytics will be disabled.');
@@ -26,20 +26,27 @@ export const initPostHog = () => {
 const setupErrorTracking = () => {
   // 未キャッチのJavaScriptエラーを追跡
   window.addEventListener('error', (event) => {
-    posthog.capture('$exception', {
-      message: event.message,
+    posthog.capture('app_error', {
+      error_type: event.error?.name || 'Error',
+      error_message: event.message,
+      error_stack: event.error?.stack,
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
-      error: event.error?.stack,
+      handled: false,
     });
   });
 
   // 未処理のPromise拒否を追跡
   window.addEventListener('unhandledrejection', (event) => {
-    posthog.capture('$exception', {
-      message: `Unhandled Promise Rejection: ${event.reason}`,
-      error: event.reason?.stack || String(event.reason),
+    const error = event.reason;
+    const message = error?.message || String(event.reason);
+
+    posthog.capture('app_error', {
+      error_type: error?.name || 'UnhandledRejection',
+      error_message: message,
+      error_stack: error?.stack || String(event.reason),
+      handled: false,
     });
   });
 };
@@ -49,9 +56,11 @@ export const reportError = (
   error: Error,
   context?: Record<string, unknown>,
 ) => {
-  posthog.capture('$exception', {
-    message: error.message,
-    error: error.stack,
+  posthog.capture('app_error', {
+    error_type: error.name,
+    error_message: error.message,
+    error_stack: error.stack,
+    handled: true,
     ...context,
   });
 };
