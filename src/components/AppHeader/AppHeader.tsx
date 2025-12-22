@@ -1,5 +1,6 @@
 import { IoArrowBack } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
+import { IconButton } from '@/components/IconButton';
 import styles from './AppHeader.module.scss';
 
 interface AppHeaderProps {
@@ -26,14 +27,11 @@ export const AppHeader = ({
       <div className={styles.headerContent}>
         <div className={styles.left}>
           {showBackButton && (
-            <button
-              type="button"
-              className={styles.backButton}
+            <IconButton
+              icon={<IoArrowBack />}
               onClick={handleBack}
-              aria-label="戻る"
-            >
-              <IoArrowBack />
-            </button>
+              ariaLabel="戻る"
+            />
           )}
         </div>
         <div className={styles.center}>
