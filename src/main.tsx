@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { initDB } from '@/lib/db';
 import { runMigration } from '@/lib/migration';
+import { initPostHog } from '@/lib/posthog';
 import './index.css';
 import App from './App.tsx';
 
@@ -23,8 +24,12 @@ const initializeDatabase = async () => {
   }
 };
 
-// DB初期化完了後にAppをマウント
+// 初期化してからAppをマウント
 (async () => {
+  // PostHogを初期化（分析ツール）
+  initPostHog();
+
+  // DBを初期化
   await initializeDatabase();
 
   createRoot(rootElement).render(
