@@ -1,17 +1,37 @@
-import { useEffect } from 'react';
-import { posthog } from '@/lib/posthog';
+import { useCallback, useEffect } from 'react';
+import { posthog, reportError as reportErrorToPostHog } from '@/lib/posthog';
 
 export const usePostHog = () => {
-  return {
-    capture: (eventName: string, properties?: Record<string, unknown>) => {
+  const capture = useCallback(
+    (eventName: string, properties?: Record<string, unknown>) => {
       posthog.capture(eventName, properties);
     },
-    identify: (userId: string, properties?: Record<string, unknown>) => {
+    [],
+  );
+
+  const identify = useCallback(
+    (userId: string, properties?: Record<string, unknown>) => {
       posthog.identify(userId, properties);
     },
-    reset: () => {
-      posthog.reset();
+    [],
+  );
+
+  const reset = useCallback(() => {
+    posthog.reset();
+  }, []);
+
+  const reportError = useCallback(
+    (error: Error, context?: Record<string, unknown>) => {
+      reportErrorToPostHog(error, context);
     },
+    [],
+  );
+
+  return {
+    capture,
+    identify,
+    reset,
+    reportError,
   };
 };
 

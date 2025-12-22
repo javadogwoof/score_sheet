@@ -10,6 +10,7 @@ import { Loading } from '@/components/Loading';
 import { PostModal, usePostModal } from '@/features/PostModal';
 import { VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
+import { usePostHog } from '@/hooks/usePostHog';
 import {
   createVideoWithReflection,
   getVideosByDate,
@@ -30,6 +31,7 @@ const DailyPage = () => {
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const { pageState, setLoading, setSuccess, setError, setEmpty } =
     usePageState();
+  const { reportError } = usePostHog();
 
   // データ読み込み
   useEffect(() => {
@@ -50,12 +52,15 @@ const DailyPage = () => {
         items.length === 0 ? setEmpty() : setSuccess();
       } catch (error) {
         console.error('Failed to load videos:', error);
+        if (error instanceof Error) {
+          reportError(error, { context: 'loadVideos', date });
+        }
         setError('データの読み込みに失敗しました');
       }
     };
 
     loadVideos();
-  }, [date, setEmpty, setError, setLoading, setSuccess]);
+  }, [date, reportError, setEmpty, setError, setLoading, setSuccess]);
 
   const handleSubmit = async (videoUrl: string) => {
     if (!date) return;
@@ -82,6 +87,9 @@ const DailyPage = () => {
       close();
     } catch (error) {
       console.error('Failed to create video:', error);
+      if (error instanceof Error) {
+        reportError(error, { context: 'createVideo', videoUrl, date });
+      }
       setError('動画の追加に失敗しました');
     }
   };
@@ -99,6 +107,9 @@ const DailyPage = () => {
       await updateReflection(video.postId, memo);
     } catch (error) {
       console.error('Failed to update memo:', error);
+      if (error instanceof Error) {
+        reportError(error, { context: 'updateMemo', videoId: id });
+      }
       // エラー時は元に戻す
       setVideos((prev) =>
         prev.map((v) => (v.id === id ? { ...v, memo: previousMemo } : v)),
