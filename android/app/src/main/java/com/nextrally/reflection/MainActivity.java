@@ -1,4 +1,4 @@
-package com.example.scoresheet;
+package com.nextrally.reflection;
 
 import com.getcapacitor.BridgeActivity;
 
