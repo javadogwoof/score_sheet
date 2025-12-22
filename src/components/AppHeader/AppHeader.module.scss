@@ -8,7 +8,29 @@
 .headerContent {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  min-width: 40px;
+}
+
+.center {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  text-align: center;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 40px;
 }
 
 .backButton {
@@ -31,13 +53,6 @@
   &:active {
     background-color: #e0e0e0;
   }
-}
-
-.titleContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
 }
 
 .title {
