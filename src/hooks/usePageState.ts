@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 export type PageState =
   | { status: 'loading' }
@@ -11,12 +11,20 @@ export const usePageState = (
 ) => {
   const [pageState, setPageState] = useState<PageState>(initialState);
 
+  const setLoading = useCallback(() => setPageState({ status: 'loading' }), []);
+  const setSuccess = useCallback(() => setPageState({ status: 'success' }), []);
+  const setError = useCallback(
+    (message: string) => setPageState({ status: 'error', message }),
+    [],
+  );
+  const setEmpty = useCallback(() => setPageState({ status: 'empty' }), []);
+
   return {
     pageState,
-    setLoading: () => setPageState({ status: 'loading' }),
-    setSuccess: () => setPageState({ status: 'success' }),
-    setError: (message: string) => setPageState({ status: 'error', message }),
-    setEmpty: () => setPageState({ status: 'empty' }),
+    setLoading,
+    setSuccess,
+    setError,
+    setEmpty,
     isLoading: pageState.status === 'loading',
     isSuccess: pageState.status === 'success',
     isError: pageState.status === 'error',
