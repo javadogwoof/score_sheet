@@ -3,8 +3,8 @@ import { IoAdd } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { AppMain } from '@/components/AppMain';
-import { Modal } from '@/components/Modal';
-import { YouTubePlayer } from '@/components/YouTubePlayer';
+import { PostModal } from '@/features/PostModal';
+import { YouTubePlayer } from '@/features/YouTubePlayer';
 
 const DailyPage = () => {
   const { date } = useParams<{ date: string }>();
@@ -16,6 +16,11 @@ const DailyPage = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+  };
+
+  const handleSubmit = (videoUrl: string) => {
+    console.log('動画URL:', videoUrl);
+    // TODO: 動画プレーヤー+メモ欄のカードを追加
   };
 
   const addButton = (
@@ -46,9 +51,11 @@ const DailyPage = () => {
       <AppMain>
         <YouTubePlayer videoId="FO6P4FoLRPU" />
       </AppMain>
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="動画を追加">
-        <p>ここに動画URLとメモの入力フォームが入ります</p>
-      </Modal>
+      <PostModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleSubmit}
+      />
     </>
   );
 };
