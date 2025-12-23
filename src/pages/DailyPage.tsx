@@ -11,12 +11,12 @@ import { PostModal, usePostModal } from '@/features/PostModal';
 import { VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
+import { DomainError, NotFoundError } from '@/lib/errors';
 import {
   createVideoWithReflection,
   getVideosByDate,
   updateReflection,
 } from '@/lib/repositories/reflectionRepository';
-import { retryWithBackoff } from '@/lib/retry';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
 interface VideoItem {
@@ -71,8 +71,11 @@ const DailyPage = () => {
 
     try {
       const videoId = crypto.randomUUID();
-      const result = await retryWithBackoff(() =>
-        createVideoWithReflection(videoId, youtubeVideoId, date, ''),
+      const result = await createVideoWithReflection(
+        videoId,
+        youtubeVideoId,
+        date,
+        '',
       );
 
       const newVideo: VideoItem = {
@@ -103,8 +106,7 @@ const DailyPage = () => {
     setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, memo } : v)));
 
     try {
-      // 自動リトライで保存（最大3回、300ms, 600ms, 1200msで再試行）
-      await retryWithBackoff(() => updateReflection(video.postId, memo));
+      await updateReflection(video.postId, memo);
     } catch (error) {
       console.error('Failed to update memo:', error);
       if (error instanceof Error) {
@@ -114,6 +116,15 @@ const DailyPage = () => {
       setVideos((prev) =>
         prev.map((v) => (v.id === id ? { ...v, memo: previousMemo } : v)),
       );
+
+      // NotFoundErrorの場合は適切なメッセージを表示
+      if (error instanceof NotFoundError) {
+        setError('投稿が見つかりません。ページを再読み込みしてください。');
+      } else if (error instanceof DomainError) {
+        setError('データの整合性エラーが発生しました');
+      } else {
+        setError('メモの保存に失敗しました');
+      }
     }
   };
 
