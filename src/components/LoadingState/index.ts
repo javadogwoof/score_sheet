@@ -1,1 +1,1 @@
-export { Loading } from './Loading';
+export { LoadingState } from './LoadingState.tsx';
