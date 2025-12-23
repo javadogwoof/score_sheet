@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
@@ -6,7 +6,7 @@ import { AppMain } from '@/components/AppMain';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
-import { Loading } from '@/components/Loading';
+import { LoadingState } from '@/components/LoadingState';
 import { PostModal, usePostModal } from '@/features/PostModal';
 import { VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
@@ -16,6 +16,7 @@ import {
   getVideosByDate,
   updateReflection,
 } from '@/lib/repositories/reflectionRepository';
+import { retryWithBackoff } from '@/lib/retry';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
 interface VideoItem {
@@ -34,33 +35,33 @@ const DailyPage = () => {
   const { reportError } = usePostHog();
 
   // データ読み込み
-  useEffect(() => {
-    const loadVideos = async () => {
-      if (!date) return;
+  const loadVideos = useCallback(async () => {
+    if (!date) return;
 
-      setLoading();
+    setLoading();
 
-      try {
-        const data = await getVideosByDate(date);
-        const items: VideoItem[] = data.map((item) => ({
-          id: item.video.id,
-          videoId: item.video.videoId,
-          postId: item.posts[0]?.id || '',
-          memo: item.posts[0]?.contents || '',
-        }));
-        setVideos(items);
-        items.length === 0 ? setEmpty() : setSuccess();
-      } catch (error) {
-        console.error('Failed to load videos:', error);
-        if (error instanceof Error) {
-          reportError(error, { context: 'loadVideos', date });
-        }
-        setError('データの読み込みに失敗しました');
+    try {
+      const data = await getVideosByDate(date);
+      const items: VideoItem[] = data.map((item) => ({
+        id: item.video.id,
+        videoId: item.video.videoId,
+        postId: item.posts[0]?.id || '',
+        memo: item.posts[0]?.contents || '',
+      }));
+      setVideos(items);
+      items.length === 0 ? setEmpty() : setSuccess();
+    } catch (error) {
+      console.error('Failed to load videos:', error);
+      if (error instanceof Error) {
+        reportError(error, { context: 'loadVideos', date });
       }
-    };
-
-    loadVideos();
+      setError('データの読み込みに失敗しました');
+    }
   }, [date, reportError, setEmpty, setError, setLoading, setSuccess]);
+
+  useEffect(() => {
+    loadVideos();
+  }, [loadVideos]);
 
   const handleSubmit = async (videoUrl: string) => {
     if (!date) return;
@@ -70,11 +71,8 @@ const DailyPage = () => {
 
     try {
       const videoId = crypto.randomUUID();
-      const result = await createVideoWithReflection(
-        videoId,
-        youtubeVideoId,
-        date,
-        '',
+      const result = await retryWithBackoff(() =>
+        createVideoWithReflection(videoId, youtubeVideoId, date, ''),
       );
 
       const newVideo: VideoItem = {
@@ -84,6 +82,7 @@ const DailyPage = () => {
         memo: '',
       };
       setVideos((prev) => [...prev, newVideo]);
+      setSuccess();
       close();
     } catch (error) {
       console.error('Failed to create video:', error);
@@ -104,7 +103,8 @@ const DailyPage = () => {
     setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, memo } : v)));
 
     try {
-      await updateReflection(video.postId, memo);
+      // 自動リトライで保存（最大3回、300ms, 600ms, 1200msで再試行）
+      await retryWithBackoff(() => updateReflection(video.postId, memo));
     } catch (error) {
       console.error('Failed to update memo:', error);
       if (error instanceof Error) {
@@ -114,12 +114,11 @@ const DailyPage = () => {
       setVideos((prev) =>
         prev.map((v) => (v.id === id ? { ...v, memo: previousMemo } : v)),
       );
-      setError('メモの保存に失敗しました');
     }
   };
 
   if (pageState.status === 'loading') {
-    return <Loading />;
+    return <LoadingState />;
   }
 
   return (
@@ -133,19 +132,20 @@ const DailyPage = () => {
       />
       <AppMain>
         {pageState.status === 'error' && (
-          <ErrorState message={pageState.message} />
+          <ErrorState message={pageState.message} onRetry={loadVideos} />
         )}
         {pageState.status === 'empty' && (
           <EmptyState message="まだ動画がありません" />
         )}
-        {videos.map((video) => (
-          <VideoCard
-            key={video.id}
-            videoId={video.videoId}
-            memo={video.memo}
-            onMemoChange={(memo) => handleMemoChange(video.id, memo)}
-          />
-        ))}
+        {pageState.status === 'success' &&
+          videos.map((video) => (
+            <VideoCard
+              key={video.id}
+              videoId={video.videoId}
+              memo={video.memo}
+              onMemoChange={(memo) => handleMemoChange(video.id, memo)}
+            />
+          ))}
       </AppMain>
       <PostModal isOpen={isOpen} onClose={close} onSubmit={handleSubmit} />
     </>

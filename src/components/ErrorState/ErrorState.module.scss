@@ -5,4 +5,29 @@
   border: 1px solid #fcc;
   border-radius: 8px;
   color: #c33;
+  text-align: center;
+}
+
+.message {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+.retryButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #d32f2f;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #b71c1c;
+  }
+
+  &:active {
+    background-color: #a31c1c;
+  }
 }
