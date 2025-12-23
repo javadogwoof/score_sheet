@@ -1,8 +1,8 @@
-import { DomainError } from './errors';
+import { NonRetryableError } from './errors';
 
 /**
  * 指数バックオフでリトライを実行する
- * DomainErrorの場合は即座に失敗させる（リトライしない）
+ * NonRetryableErrorの場合は即座に失敗させる（リトライしない）
  * @param fn 実行する非同期関数
  * @param maxRetries 最大リトライ回数（デフォルト: 3）
  * @param baseDelay 初回待機時間（ミリ秒、デフォルト: 300）
@@ -20,8 +20,8 @@ export async function retryWithBackoff<T>(
     } catch (error) {
       lastError = error as Error;
 
-      // DomainErrorの場合はリトライせずに即座に失敗
-      if (lastError instanceof DomainError) {
+      // NonRetryableErrorの場合はリトライせずに即座に失敗
+      if (lastError instanceof NonRetryableError) {
         throw lastError;
       }
 

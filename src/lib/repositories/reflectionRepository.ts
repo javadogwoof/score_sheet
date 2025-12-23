@@ -1,6 +1,6 @@
 import type { capSQLiteChanges } from '@capacitor-community/sqlite';
 import { getDB } from '../db';
-import { DatabaseError, NotFoundError } from '../errors';
+import { NotFoundError, RetryableError } from '../errors';
 import { retryWithBackoff } from '../retry';
 
 export interface Video {
@@ -59,7 +59,7 @@ export const createVideoWithReflection = async (
       return { videoId, postId };
     } catch (error) {
       await db.rollbackTransaction();
-      throw new DatabaseError('Failed to create video with reflection', error);
+      throw new RetryableError('Failed to create video with reflection', error);
     }
   });
 };
@@ -92,7 +92,7 @@ export const addReflectionToVideo = async (
       ),
     );
   } catch (error) {
-    throw new DatabaseError('Failed to add reflection to video', error);
+    throw new RetryableError('Failed to add reflection to video', error);
   }
 
   return postId;
@@ -117,10 +117,10 @@ export const updateReflection = async (
       ]),
     );
   } catch (error) {
-    throw new DatabaseError('Failed to update reflection', error);
+    throw new RetryableError('Failed to update reflection', error);
   }
 
-  // リトライ後に存在チェック（ドメイン制約）
+  // リトライ後に存在チェック（リトライ不要なエラー）
   if (result.changes?.changes === 0) {
     throw new NotFoundError('Post', postId);
   }
@@ -138,10 +138,10 @@ export const deleteReflection = async (postId: string): Promise<void> => {
       db.run('DELETE FROM posts WHERE id = ?', [postId]),
     );
   } catch (error) {
-    throw new DatabaseError('Failed to delete reflection', error);
+    throw new RetryableError('Failed to delete reflection', error);
   }
 
-  // リトライ後に存在チェック（ドメイン制約）
+  // リトライ後に存在チェック（リトライ不要なエラー）
   if (result.changes?.changes === 0) {
     throw new NotFoundError('Post', postId);
   }
@@ -185,6 +185,6 @@ export const getVideosByDate = async (
       return videosWithPosts;
     });
   } catch (error) {
-    throw new DatabaseError('Failed to get videos by date', error);
+    throw new RetryableError('Failed to get videos by date', error);
   }
 };

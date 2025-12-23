@@ -11,7 +11,7 @@ import { PostModal, usePostModal } from '@/features/PostModal';
 import { VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
-import { DomainError, NotFoundError } from '@/lib/errors';
+import { NotFoundError } from '@/lib/errors';
 import {
   createVideoWithReflection,
   getVideosByDate,
@@ -117,11 +117,9 @@ const DailyPage = () => {
         prev.map((v) => (v.id === id ? { ...v, memo: previousMemo } : v)),
       );
 
-      // NotFoundErrorの場合は適切なメッセージを表示
+      // エラータイプに応じたメッセージを表示
       if (error instanceof NotFoundError) {
         setError('投稿が見つかりません。ページを再読み込みしてください。');
-      } else if (error instanceof DomainError) {
-        setError('データの整合性エラーが発生しました');
       } else {
         setError('メモの保存に失敗しました');
       }

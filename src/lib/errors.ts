@@ -1,18 +1,21 @@
 /**
- * ドメインエラー基底クラス（リトライ不要）
- * ビジネスロジックやドメイン制約の違反を示す
+ * リトライ不要なエラー基底クラス
+ * リソース不在、パラメータ不正など、リトライしても解決しないエラー
  */
-export class DomainError extends Error {
-  constructor(message: string) {
+export class NonRetryableError extends Error {
+  constructor(
+    message: string,
+    public cause?: unknown,
+  ) {
     super(message);
-    this.name = 'DomainError';
+    this.name = 'NonRetryableError';
   }
 }
 
 /**
  * リソースが見つからないエラー
  */
-export class NotFoundError extends DomainError {
+export class NotFoundError extends NonRetryableError {
   constructor(resource: string, id: string) {
     super(`${resource} with id ${id} does not exist`);
     this.name = 'NotFoundError';
@@ -20,15 +23,15 @@ export class NotFoundError extends DomainError {
 }
 
 /**
- * データベースアクセスエラー（リトライ可能）
- * 接続エラー、タイムアウト、一時的な障害など
+ * リトライ可能なエラー基底クラス
+ * データベース接続エラー、タイムアウト、一時的な障害など
  */
-export class DatabaseError extends Error {
+export class RetryableError extends Error {
   constructor(
     message: string,
     public cause?: unknown,
   ) {
     super(message);
-    this.name = 'DatabaseError';
+    this.name = 'RetryableError';
   }
 }
