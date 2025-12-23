@@ -117,10 +117,6 @@ const DailyPage = () => {
     }
   };
 
-  if (pageState.status === 'loading') {
-    return <LoadingState />;
-  }
-
   return (
     <>
       <AppHeader
@@ -131,6 +127,7 @@ const DailyPage = () => {
         }
       />
       <AppMain>
+        {pageState.status === 'loading' && <LoadingState />}
         {pageState.status === 'error' && (
           <ErrorState message={pageState.message} onRetry={loadVideos} />
         )}
