@@ -1,4 +1,7 @@
+import type { capSQLiteChanges } from '@capacitor-community/sqlite';
 import { getDB } from '../db';
+import { DatabaseError, NotFoundError } from '../errors';
+import { retryWithBackoff } from '../retry';
 
 export interface Video {
   id: string;
@@ -29,34 +32,36 @@ export const createVideoWithReflection = async (
   date: string,
   initialContents: string,
 ): Promise<{ videoId: string; postId: string }> => {
-  const db = getDB();
-  const now = Date.now();
-  const postId = crypto.randomUUID();
+  return await retryWithBackoff(async () => {
+    const db = getDB();
+    const now = Date.now();
+    const postId = crypto.randomUUID();
 
-  await db.beginTransaction();
+    await db.beginTransaction();
 
-  try {
-    // 動画を作成（transaction: falseを指定してbeginTransaction/commitで制御）
-    await db.run(
-      'INSERT INTO videos (id, videoId, date, createdAt) VALUES (?, ?, ?, ?)',
-      [videoId, youtubeVideoId, date, now],
-      false,
-    );
+    try {
+      // 動画を作成（transaction: falseを指定してbeginTransaction/commitで制御）
+      await db.run(
+        'INSERT INTO videos (id, videoId, date, createdAt) VALUES (?, ?, ?, ?)',
+        [videoId, youtubeVideoId, date, now],
+        false,
+      );
 
-    // 最初の投稿を作成
-    await db.run(
-      'INSERT INTO posts (id, videoId, contents, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-      [postId, videoId, initialContents, now, now],
-      false,
-    );
+      // 最初の投稿を作成
+      await db.run(
+        'INSERT INTO posts (id, videoId, contents, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
+        [postId, videoId, initialContents, now, now],
+        false,
+      );
 
-    await db.commitTransaction();
+      await db.commitTransaction();
 
-    return { videoId, postId };
-  } catch (error) {
-    await db.rollbackTransaction();
-    throw error;
-  }
+      return { videoId, postId };
+    } catch (error) {
+      await db.rollbackTransaction();
+      throw new DatabaseError('Failed to create video with reflection', error);
+    }
+  });
 };
 
 /**
@@ -70,19 +75,25 @@ export const addReflectionToVideo = async (
   const now = Date.now();
   const postId = crypto.randomUUID();
 
-  // 動画が存在するか確認
-  const videoResult = await db.query(
-    'SELECT id FROM videos WHERE id = ? LIMIT 1',
-    [videoId],
+  // 動画が存在するか確認（ドメイン制約チェック、リトライ不要）
+  const videoResult = await retryWithBackoff(() =>
+    db.query('SELECT id FROM videos WHERE id = ? LIMIT 1', [videoId]),
   );
   if (!videoResult.values || videoResult.values.length === 0) {
-    throw new Error(`Video with id ${videoId} does not exist`);
+    throw new NotFoundError('Video', videoId);
   }
 
-  await db.run(
-    'INSERT INTO posts (id, videoId, contents, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-    [postId, videoId, contents, now, now],
-  );
+  // 投稿を追加（DB操作、リトライ可能）
+  try {
+    await retryWithBackoff(() =>
+      db.run(
+        'INSERT INTO posts (id, videoId, contents, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
+        [postId, videoId, contents, now, now],
+      ),
+    );
+  } catch (error) {
+    throw new DatabaseError('Failed to add reflection to video', error);
+  }
 
   return postId;
 };
@@ -96,13 +107,22 @@ export const updateReflection = async (
 ): Promise<void> => {
   const db = getDB();
 
-  const result = await db.run(
-    'UPDATE posts SET contents = ?, updatedAt = ? WHERE id = ?',
-    [contents, Date.now(), postId],
-  );
+  let result: capSQLiteChanges;
+  try {
+    result = await retryWithBackoff(() =>
+      db.run('UPDATE posts SET contents = ?, updatedAt = ? WHERE id = ?', [
+        contents,
+        Date.now(),
+        postId,
+      ]),
+    );
+  } catch (error) {
+    throw new DatabaseError('Failed to update reflection', error);
+  }
 
+  // リトライ後に存在チェック（ドメイン制約）
   if (result.changes?.changes === 0) {
-    throw new Error(`Post with id ${postId} does not exist`);
+    throw new NotFoundError('Post', postId);
   }
 };
 
@@ -112,10 +132,18 @@ export const updateReflection = async (
 export const deleteReflection = async (postId: string): Promise<void> => {
   const db = getDB();
 
-  const result = await db.run('DELETE FROM posts WHERE id = ?', [postId]);
+  let result: capSQLiteChanges;
+  try {
+    result = await retryWithBackoff(() =>
+      db.run('DELETE FROM posts WHERE id = ?', [postId]),
+    );
+  } catch (error) {
+    throw new DatabaseError('Failed to delete reflection', error);
+  }
 
+  // リトライ後に存在チェック（ドメイン制約）
   if (result.changes?.changes === 0) {
-    throw new Error(`Post with id ${postId} does not exist`);
+    throw new NotFoundError('Post', postId);
   }
 };
 
@@ -125,32 +153,38 @@ export const deleteReflection = async (postId: string): Promise<void> => {
 export const getVideosByDate = async (
   date: string,
 ): Promise<VideoWithPosts[]> => {
-  const db = getDB();
+  try {
+    return await retryWithBackoff(async () => {
+      const db = getDB();
 
-  // 動画を取得
-  const videosResult = await db.query(
-    'SELECT * FROM videos WHERE date = ? ORDER BY createdAt ASC',
-    [date],
-  );
+      // 動画を取得
+      const videosResult = await db.query(
+        'SELECT * FROM videos WHERE date = ? ORDER BY createdAt ASC',
+        [date],
+      );
 
-  const videos = (videosResult.values || []) as Video[];
+      const videos = (videosResult.values || []) as Video[];
 
-  // 各動画に紐づく投稿を取得
-  const videosWithPosts: VideoWithPosts[] = [];
+      // 各動画に紐づく投稿を取得
+      const videosWithPosts: VideoWithPosts[] = [];
 
-  for (const video of videos) {
-    const postsResult = await db.query(
-      'SELECT * FROM posts WHERE videoId = ? ORDER BY createdAt ASC',
-      [video.id],
-    );
+      for (const video of videos) {
+        const postsResult = await db.query(
+          'SELECT * FROM posts WHERE videoId = ? ORDER BY createdAt ASC',
+          [video.id],
+        );
 
-    const posts = (postsResult.values || []) as Post[];
+        const posts = (postsResult.values || []) as Post[];
 
-    videosWithPosts.push({
-      video,
-      posts,
+        videosWithPosts.push({
+          video,
+          posts,
+        });
+      }
+
+      return videosWithPosts;
     });
+  } catch (error) {
+    throw new DatabaseError('Failed to get videos by date', error);
   }
-
-  return videosWithPosts;
 };
