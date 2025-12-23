@@ -1,5 +1,8 @@
+import { DomainError } from './errors';
+
 /**
  * 指数バックオフでリトライを実行する
+ * DomainErrorの場合は即座に失敗させる（リトライしない）
  * @param fn 実行する非同期関数
  * @param maxRetries 最大リトライ回数（デフォルト: 3）
  * @param baseDelay 初回待機時間（ミリ秒、デフォルト: 300）
@@ -16,6 +19,11 @@ export async function retryWithBackoff<T>(
       return await fn();
     } catch (error) {
       lastError = error as Error;
+
+      // DomainErrorの場合はリトライせずに即座に失敗
+      if (lastError instanceof DomainError) {
+        throw lastError;
+      }
 
       // 最後の試行の場合はエラーを投げる
       if (attempt === maxRetries) {
