@@ -8,7 +8,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { PostModal, usePostModal } from '@/features/PostModal';
-import { VideoCard } from '@/features/VideoCard';
+import { type Post, VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
 import { NotFoundError } from '@/lib/errors';
@@ -16,15 +16,13 @@ import {
   addReflectionToVideo,
   getVideosByDate,
   postVideo,
-  updateReflection,
 } from '@/lib/repositories/reflectionRepository';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
 interface VideoItem {
   id: string;
   videoId: string;
-  postId?: string;
-  memo: string;
+  posts: Post[];
 }
 
 const DailyPage = () => {
@@ -46,8 +44,10 @@ const DailyPage = () => {
       const items: VideoItem[] = data.map((item) => ({
         id: item.video.id,
         videoId: item.video.videoId,
-        postId: item.posts[0]?.id,
-        memo: item.posts[0]?.contents || '',
+        posts: item.posts.map((post) => ({
+          id: post.id,
+          content: post.contents,
+        })),
       }));
       setVideos(items);
       items.length === 0 ? setEmpty() : setSuccess();
@@ -76,8 +76,7 @@ const DailyPage = () => {
       const newVideo: VideoItem = {
         id: videoId,
         videoId: youtubeVideoId,
-        postId: undefined,
-        memo: '',
+        posts: [],
       };
       setVideos((prev) => [...prev, newVideo]);
       setSuccess();
@@ -90,42 +89,43 @@ const DailyPage = () => {
     }
   };
 
-  const handleMemoChange = async (id: string, memo: string) => {
-    const video = videos.find((v) => v.id === id);
+  const handleAddPost = async (videoId: string, content: string) => {
+    if (!content) return;
+
+    const video = videos.find((v) => v.id === videoId);
     if (!video) return;
 
-    const previousMemo = video.memo;
-    let postId = video.postId;
-
-    // 楽観的更新
-    setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, memo } : v)));
-
     try {
-      // postIdがない場合は先に振り返り投稿を作成
-      if (!postId) {
-        postId = await addReflectionToVideo(video.id, memo);
-        setVideos((prev) =>
-          prev.map((v) => (v.id === id ? { ...v, postId } : v)),
-        );
-      } else {
-        // postIdがある場合は通常の更新
-        await updateReflection(postId, memo);
-      }
-    } catch (error) {
-      console.error('Failed to update memo:', error);
-      if (error instanceof Error) {
-        reportError(error, { context: 'updateMemo', videoId: id });
-      }
-      // エラー時は元に戻す
-      setVideos((prev) =>
-        prev.map((v) => (v.id === id ? { ...v, memo: previousMemo } : v)),
-      );
+      // 新しい投稿を作成
+      const newPostId = await addReflectionToVideo(videoId, content);
 
-      // エラータイプに応じたメッセージを表示
+      // optimisticに表示を更新
+      setVideos((prev) =>
+        prev.map((v) =>
+          v.id === videoId
+            ? {
+                ...v,
+                posts: [
+                  ...v.posts,
+                  {
+                    id: newPostId,
+                    content,
+                  },
+                ],
+              }
+            : v,
+        ),
+      );
+    } catch (error) {
+      console.error('Failed to add post:', error);
+      if (error instanceof Error) {
+        reportError(error, { context: 'addPost', videoId });
+      }
+
       if (error instanceof NotFoundError) {
-        setError('投稿が見つかりません。ページを再読み込みしてください。');
+        setError('動画が見つかりません。ページを再読み込みしてください。');
       } else {
-        setError('メモの保存に失敗しました');
+        setError('投稿の追加に失敗しました');
       }
     }
   };
@@ -152,9 +152,8 @@ const DailyPage = () => {
             <VideoCard
               key={video.id}
               videoId={video.videoId}
-              memo={video.memo}
-              hasPost={!!video.postId}
-              onMemoChange={(memo) => handleMemoChange(video.id, memo)}
+              posts={video.posts}
+              onAddPost={(content) => handleAddPost(video.id, content)}
             />
           ))}
       </AppMain>

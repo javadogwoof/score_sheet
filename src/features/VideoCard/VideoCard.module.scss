@@ -4,15 +4,36 @@
   gap: 16px;
 }
 
-.memo {
-  width: 100%;
-  min-height: 100px;
+.postItem {
   padding: 12px;
+  background-color: #f9f9f9;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
+}
+
+.postContent {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.inputSection {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.memo {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
   font-size: 16px;
   font-family: inherit;
-  resize: vertical;
 
   &:focus {
     outline: none;
@@ -21,5 +42,28 @@
 
   &::placeholder {
     color: #999;
+  }
+}
+
+.submitButton {
+  padding: 10px 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+
+  &:hover:not(:disabled) {
+    background-color: #0056b3;
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
   }
 }

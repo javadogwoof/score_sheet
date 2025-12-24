@@ -1,1 +1,1 @@
-export { VideoCard } from './VideoCard';
+export { type Post, VideoCard } from './VideoCard';
