@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
@@ -11,40 +11,37 @@ import { PostModal, usePostModal } from '@/features/PostModal';
 import { VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
-import type { Video } from '@/lib/domain/types';
-import { NotFoundError } from '@/lib/errors';
-import {
-  addReflectionToVideo,
-  getVideosByDate,
-  postVideo,
-} from '@/lib/repositories/reflectionRepository';
+import { useVideosState } from '@/hooks/useVideosState';
+import { postVideo } from '@/lib/repositories/reflectionRepository';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
 const DailyPage = () => {
   const { date } = useParams<{ date: string }>();
   const { isOpen, open, close } = usePostModal();
-  const [videos, setVideos] = useState<Video[]>([]);
+  const { videos, loading, error, loadVideos, addPost } = useVideosState(date);
   const { pageState, setLoading, setSuccess, setError, setEmpty } =
     usePageState();
   const { reportError } = usePostHog();
 
-  // データ読み込み
-  const loadVideos = useCallback(async () => {
-    if (!date) return;
-
-    setLoading();
-
-    try {
-      const data = await getVideosByDate(date);
-      setVideos(data);
-      data.length === 0 ? setEmpty() : setSuccess();
-    } catch (error) {
-      if (error instanceof Error) {
-        reportError(error, { context: 'loadVideos', date });
-      }
-      setError('データの読み込みに失敗しました');
+  useEffect(() => {
+    if (loading) {
+      setLoading();
+    } else if (error) {
+      setError(error);
+    } else if (videos.length === 0) {
+      setEmpty();
+    } else {
+      setSuccess();
     }
-  }, [date, reportError, setEmpty, setError, setLoading, setSuccess]);
+  }, [
+    loading,
+    error,
+    videos.length,
+    setLoading,
+    setError,
+    setEmpty,
+    setSuccess,
+  ]);
 
   useEffect(() => {
     loadVideos();
@@ -59,61 +56,13 @@ const DailyPage = () => {
     try {
       const videoId = crypto.randomUUID();
       await postVideo(videoId, youtubeVideoId, date);
-
-      const newVideo: Video = {
-        id: videoId,
-        videoId: youtubeVideoId,
-        posts: [],
-      };
-      setVideos((prev) => [...prev, newVideo]);
-      setSuccess();
+      await loadVideos();
       close();
     } catch (error) {
       if (error instanceof Error) {
         reportError(error, { context: 'createVideo', videoUrl, date });
       }
       setError('動画の追加に失敗しました');
-    }
-  };
-
-  const handleAddPost = async (videoId: string, content: string) => {
-    if (!content) return;
-
-    const video = videos.find((v) => v.id === videoId);
-    if (!video) return;
-
-    try {
-      // 新しい投稿を作成
-      const newPostId = await addReflectionToVideo(videoId, content);
-
-      // optimisticに表示を更新
-      setVideos((prev) =>
-        prev.map((v) =>
-          v.id === videoId
-            ? {
-                ...v,
-                posts: [
-                  ...v.posts,
-                  {
-                    id: newPostId,
-                    content,
-                  },
-                ],
-              }
-            : v,
-        ),
-      );
-    } catch (error) {
-      console.error('Failed to add post:', error);
-      if (error instanceof Error) {
-        reportError(error, { context: 'addPost', videoId });
-      }
-
-      if (error instanceof NotFoundError) {
-        setError('動画が見つかりません。ページを再読み込みしてください。');
-      } else {
-        setError('投稿の追加に失敗しました');
-      }
     }
   };
 
@@ -140,7 +89,7 @@ const DailyPage = () => {
               key={video.id}
               videoId={video.videoId}
               posts={video.posts}
-              onAddPost={(content) => handleAddPost(video.id, content)}
+              onAddPost={(content) => addPost(video.id, content)}
             />
           ))}
       </AppMain>
