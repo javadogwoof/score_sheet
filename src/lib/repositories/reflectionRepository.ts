@@ -26,11 +26,10 @@ export interface VideoWithPosts {
 /**
  * 動画と最初の振り返り投稿を同時作成（トランザクション）
  */
-export const createVideoWithReflection = async (
+export const postVideo = async (
   videoId: string,
   youtubeVideoId: string,
   date: string,
-  initialContents: string,
 ): Promise<{ videoId: string; postId: string }> => {
   return await retryWithBackoff(async () => {
     const db = getDB();
@@ -47,19 +46,12 @@ export const createVideoWithReflection = async (
         false,
       );
 
-      // 最初の投稿を作成
-      await db.run(
-        'INSERT INTO posts (id, videoId, contents, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-        [postId, videoId, initialContents, now, now],
-        false,
-      );
-
       await db.commitTransaction();
 
       return { videoId, postId };
-    } catch (error) {
+    } catch (_error) {
       await db.rollbackTransaction();
-      throw new RetryableError('Failed to create video with reflection', error);
+      throw new RetryableError('Failed to create video');
     }
   });
 };
@@ -91,8 +83,8 @@ export const addReflectionToVideo = async (
         [postId, videoId, contents, now, now],
       ),
     );
-  } catch (error) {
-    throw new RetryableError('Failed to add reflection to video', error);
+  } catch (_error) {
+    throw new RetryableError('Failed to add reflection to video');
   }
 
   return postId;
@@ -116,8 +108,8 @@ export const updateReflection = async (
         postId,
       ]),
     );
-  } catch (error) {
-    throw new RetryableError('Failed to update reflection', error);
+  } catch (_error) {
+    throw new RetryableError('Failed to update reflection');
   }
 
   // リトライ後に存在チェック（リトライ不要なエラー）
@@ -137,8 +129,8 @@ export const deleteReflection = async (postId: string): Promise<void> => {
     result = await retryWithBackoff(() =>
       db.run('DELETE FROM posts WHERE id = ?', [postId]),
     );
-  } catch (error) {
-    throw new RetryableError('Failed to delete reflection', error);
+  } catch (_error) {
+    throw new RetryableError('Failed to delete reflection');
   }
 
   // リトライ後に存在チェック（リトライ不要なエラー）
@@ -184,7 +176,7 @@ export const getVideosByDate = async (
 
       return videosWithPosts;
     });
-  } catch (error) {
-    throw new RetryableError('Failed to get videos by date', error);
+  } catch (_error) {
+    throw new RetryableError('Failed to get videos by date');
   }
 };

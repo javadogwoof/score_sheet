@@ -13,8 +13,8 @@ import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
 import { NotFoundError } from '@/lib/errors';
 import {
-  createVideoWithReflection,
   getVideosByDate,
+  postVideo,
   updateReflection,
 } from '@/lib/repositories/reflectionRepository';
 import { extractYouTubeVideoId } from '@/lib/youtube';
@@ -71,12 +71,7 @@ const DailyPage = () => {
 
     try {
       const videoId = crypto.randomUUID();
-      const result = await createVideoWithReflection(
-        videoId,
-        youtubeVideoId,
-        date,
-        '',
-      );
+      const result = await postVideo(videoId, youtubeVideoId, date);
 
       const newVideo: VideoItem = {
         id: result.videoId,

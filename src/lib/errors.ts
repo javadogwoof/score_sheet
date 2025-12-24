@@ -3,10 +3,7 @@
  * リソース不在、パラメータ不正など、リトライしても解決しないエラー
  */
 export class NonRetryableError extends Error {
-  constructor(
-    message: string,
-    public cause?: unknown,
-  ) {
+  constructor(message: string) {
     super(message);
     this.name = 'NonRetryableError';
   }
@@ -27,10 +24,7 @@ export class NotFoundError extends NonRetryableError {
  * データベース接続エラー、タイムアウト、一時的な障害など
  */
 export class RetryableError extends Error {
-  constructor(
-    message: string,
-    public cause?: unknown,
-  ) {
+  constructor(message: string) {
     super(message);
     this.name = 'RetryableError';
   }

@@ -3,7 +3,7 @@ import type { SQLiteDBConnection } from '@capacitor-community/sqlite';
 import {
   updateReflection,
   deleteReflection,
-  createVideoWithReflection,
+  postVideo,
 } from '@/lib/repositories/reflectionRepository';
 import { NotFoundError, RetryableError } from '@/lib/errors';
 import * as db from '@/lib/db';
@@ -104,7 +104,7 @@ describe('reflectionRepository', () => {
         changes: { changes: 0 },
       });
 
-      const result = await createVideoWithReflection(
+      const result = await postVideo(
         'video-id',
         'youtube-id',
         '2025-01-01',
@@ -126,7 +126,7 @@ describe('reflectionRepository', () => {
       });
 
       await expect(
-        createVideoWithReflection(
+        postVideo(
           'video-id',
           'youtube-id',
           '2025-01-01',
