@@ -1,26 +1,23 @@
 import type { capSQLiteChanges } from '@capacitor-community/sqlite';
 import { getDB } from '../db';
+import type { Video } from '../domain/types';
 import { NotFoundError, RetryableError } from '../errors';
 import { retryWithBackoff } from '../retry';
 
-export interface Video {
+// Internal DB DTOs
+interface VideoDTO {
   id: string;
   videoId: string;
   date: string;
   createdAt: number;
 }
 
-export interface Post {
+interface PostDTO {
   id: string;
   videoId: string;
   contents: string;
   createdAt: number;
   updatedAt: number;
-}
-
-export interface VideoWithPosts {
-  video: Video;
-  posts: Post[];
 }
 
 /**
@@ -142,9 +139,7 @@ export const deleteReflection = async (postId: string): Promise<void> => {
 /**
  * 日付で動画と投稿をまとめて取得（投稿0件の動画も含む）
  */
-export const getVideosByDate = async (
-  date: string,
-): Promise<VideoWithPosts[]> => {
+export const getVideosByDate = async (date: string): Promise<Video[]> => {
   try {
     return await retryWithBackoff(async () => {
       const db = getDB();
@@ -155,10 +150,10 @@ export const getVideosByDate = async (
         [date],
       );
 
-      const videos = (videosResult.values || []) as Video[];
+      const videos = (videosResult.values || []) as VideoDTO[];
 
-      // 各動画に紐づく投稿を取得
-      const videosWithPosts: VideoWithPosts[] = [];
+      // 各動画に紐づく投稿を取得し、ドメイン型に変換
+      const domainVideos: Video[] = [];
 
       for (const video of videos) {
         const postsResult = await db.query(
@@ -166,15 +161,19 @@ export const getVideosByDate = async (
           [video.id],
         );
 
-        const posts = (postsResult.values || []) as Post[];
+        const posts = (postsResult.values || []) as PostDTO[];
 
-        videosWithPosts.push({
-          video,
-          posts,
+        domainVideos.push({
+          id: video.id,
+          videoId: video.videoId,
+          posts: posts.map((post) => ({
+            id: post.id,
+            content: post.contents,
+          })),
         });
       }
 
-      return videosWithPosts;
+      return domainVideos;
     });
   } catch (_error) {
     throw new RetryableError('Failed to get videos by date');

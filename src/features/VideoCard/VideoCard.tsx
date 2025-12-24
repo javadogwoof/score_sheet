@@ -2,12 +2,8 @@ import { useState } from 'react';
 import { IoSend } from 'react-icons/io5';
 import { Card } from '@/components/Card/Card';
 import { YouTubePlayer } from '@/features/YouTubePlayer';
+import type { Post } from '@/lib/domain/types';
 import styles from './VideoCard.module.scss';
-
-export interface Post {
-  id: string;
-  content: string;
-}
 
 interface VideoCardProps {
   videoId: string;

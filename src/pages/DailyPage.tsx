@@ -8,9 +8,10 @@ import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { PostModal, usePostModal } from '@/features/PostModal';
-import { type Post, VideoCard } from '@/features/VideoCard';
+import { VideoCard } from '@/features/VideoCard';
 import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
+import type { Video } from '@/lib/domain/types';
 import { NotFoundError } from '@/lib/errors';
 import {
   addReflectionToVideo,
@@ -19,16 +20,10 @@ import {
 } from '@/lib/repositories/reflectionRepository';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
-interface VideoItem {
-  id: string;
-  videoId: string;
-  posts: Post[];
-}
-
 const DailyPage = () => {
   const { date } = useParams<{ date: string }>();
   const { isOpen, open, close } = usePostModal();
-  const [videos, setVideos] = useState<VideoItem[]>([]);
+  const [videos, setVideos] = useState<Video[]>([]);
   const { pageState, setLoading, setSuccess, setError, setEmpty } =
     usePageState();
   const { reportError } = usePostHog();
@@ -41,16 +36,8 @@ const DailyPage = () => {
 
     try {
       const data = await getVideosByDate(date);
-      const items: VideoItem[] = data.map((item) => ({
-        id: item.video.id,
-        videoId: item.video.videoId,
-        posts: item.posts.map((post) => ({
-          id: post.id,
-          content: post.contents,
-        })),
-      }));
-      setVideos(items);
-      items.length === 0 ? setEmpty() : setSuccess();
+      setVideos(data);
+      data.length === 0 ? setEmpty() : setSuccess();
     } catch (error) {
       if (error instanceof Error) {
         reportError(error, { context: 'loadVideos', date });
@@ -73,7 +60,7 @@ const DailyPage = () => {
       const videoId = crypto.randomUUID();
       await postVideo(videoId, youtubeVideoId, date);
 
-      const newVideo: VideoItem = {
+      const newVideo: Video = {
         id: videoId,
         videoId: youtubeVideoId,
         posts: [],
