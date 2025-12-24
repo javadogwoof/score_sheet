@@ -13,6 +13,7 @@ import { usePageState } from '@/hooks/usePageState';
 import { usePostHog } from '@/hooks/usePostHog';
 import { NotFoundError } from '@/lib/errors';
 import {
+  addReflectionToVideo,
   getVideosByDate,
   postVideo,
   updateReflection,
@@ -22,7 +23,7 @@ import { extractYouTubeVideoId } from '@/lib/youtube';
 interface VideoItem {
   id: string;
   videoId: string;
-  postId: string;
+  postId?: string;
   memo: string;
 }
 
@@ -45,13 +46,12 @@ const DailyPage = () => {
       const items: VideoItem[] = data.map((item) => ({
         id: item.video.id,
         videoId: item.video.videoId,
-        postId: item.posts[0]?.id || '',
+        postId: item.posts[0]?.id,
         memo: item.posts[0]?.contents || '',
       }));
       setVideos(items);
       items.length === 0 ? setEmpty() : setSuccess();
     } catch (error) {
-      console.error('Failed to load videos:', error);
       if (error instanceof Error) {
         reportError(error, { context: 'loadVideos', date });
       }
@@ -71,19 +71,18 @@ const DailyPage = () => {
 
     try {
       const videoId = crypto.randomUUID();
-      const result = await postVideo(videoId, youtubeVideoId, date);
+      await postVideo(videoId, youtubeVideoId, date);
 
       const newVideo: VideoItem = {
-        id: result.videoId,
+        id: videoId,
         videoId: youtubeVideoId,
-        postId: result.postId,
+        postId: undefined,
         memo: '',
       };
       setVideos((prev) => [...prev, newVideo]);
       setSuccess();
       close();
     } catch (error) {
-      console.error('Failed to create video:', error);
       if (error instanceof Error) {
         reportError(error, { context: 'createVideo', videoUrl, date });
       }
@@ -96,12 +95,22 @@ const DailyPage = () => {
     if (!video) return;
 
     const previousMemo = video.memo;
+    let postId = video.postId;
 
     // 楽観的更新
     setVideos((prev) => prev.map((v) => (v.id === id ? { ...v, memo } : v)));
 
     try {
-      await updateReflection(video.postId, memo);
+      // postIdがない場合は先に振り返り投稿を作成
+      if (!postId) {
+        postId = await addReflectionToVideo(video.id, memo);
+        setVideos((prev) =>
+          prev.map((v) => (v.id === id ? { ...v, postId } : v)),
+        );
+      } else {
+        // postIdがある場合は通常の更新
+        await updateReflection(postId, memo);
+      }
     } catch (error) {
       console.error('Failed to update memo:', error);
       if (error instanceof Error) {
@@ -144,6 +153,7 @@ const DailyPage = () => {
               key={video.id}
               videoId={video.videoId}
               memo={video.memo}
+              hasPost={!!video.postId}
               onMemoChange={(memo) => handleMemoChange(video.id, memo)}
             />
           ))}

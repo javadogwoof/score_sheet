@@ -5,10 +5,16 @@ import styles from './VideoCard.module.scss';
 interface VideoCardProps {
   videoId: string;
   memo: string;
+  hasPost: boolean;
   onMemoChange: (memo: string) => void;
 }
 
-export const VideoCard = ({ videoId, memo, onMemoChange }: VideoCardProps) => {
+export const VideoCard = ({
+  videoId,
+  memo,
+  hasPost,
+  onMemoChange,
+}: VideoCardProps) => {
   return (
     <Card>
       <div className={styles.container}>
@@ -17,7 +23,9 @@ export const VideoCard = ({ videoId, memo, onMemoChange }: VideoCardProps) => {
           className={styles.memo}
           value={memo}
           onChange={(e) => onMemoChange(e.target.value)}
-          placeholder="メモを入力..."
+          placeholder={
+            hasPost ? 'メモを入力...' : '入力を開始して振り返りを追加'
+          }
         />
       </div>
     </Card>

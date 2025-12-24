@@ -14,7 +14,7 @@ vi.mock('@/lib/db', () => ({
 }));
 
 describe('reflectionRepository', () => {
-  let mockDB: Partial<SQLiteDBConnection>;
+  let mockDB: Record<string, ReturnType<typeof vi.fn>>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,7 +28,7 @@ describe('reflectionRepository', () => {
       rollbackTransaction: vi.fn(),
     };
 
-    vi.mocked(db.getDB).mockReturnValue(mockDB as SQLiteDBConnection);
+    vi.mocked(db.getDB).mockReturnValue(mockDB as unknown as SQLiteDBConnection);
   });
 
   describe('updateReflection', () => {
@@ -104,15 +104,9 @@ describe('reflectionRepository', () => {
         changes: { changes: 0 },
       });
 
-      const result = await postVideo(
-        'video-id',
-        'youtube-id',
-        '2025-01-01',
-        'initial content',
-      );
+      const result = await postVideo('video-id', 'youtube-id', '2025-01-01');
 
       expect(result).toHaveProperty('videoId', 'video-id');
-      expect(result).toHaveProperty('postId');
       expect(mockDB.beginTransaction).toHaveBeenCalled();
       expect(mockDB.commitTransaction).toHaveBeenCalled();
     });
@@ -126,12 +120,7 @@ describe('reflectionRepository', () => {
       });
 
       await expect(
-        postVideo(
-          'video-id',
-          'youtube-id',
-          '2025-01-01',
-          'content',
-        ),
+        postVideo('video-id', 'youtube-id', '2025-01-01'),
       ).rejects.toThrow(RetryableError);
 
       // リトライされることを確認
