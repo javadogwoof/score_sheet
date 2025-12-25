@@ -104,7 +104,12 @@ describe('reflectionRepository', () => {
         changes: { changes: 0 },
       });
 
-      const result = await postVideo('video-id', 'youtube-id', '2025-01-01');
+      const result = await postVideo(
+        'video-id',
+        'youtube-id',
+        '2025-01-01',
+        '',
+      );
 
       expect(result).toHaveProperty('videoId', 'video-id');
       expect(mockDB.beginTransaction).toHaveBeenCalled();
@@ -120,7 +125,7 @@ describe('reflectionRepository', () => {
       });
 
       await expect(
-        postVideo('video-id', 'youtube-id', '2025-01-01'),
+        postVideo('video-id', 'youtube-id', '2025-01-01', ''),
       ).rejects.toThrow(RetryableError);
 
       // リトライされることを確認

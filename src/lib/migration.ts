@@ -11,7 +11,8 @@ export const runMigration = async (): Promise<void> => {
       id TEXT PRIMARY KEY,
       videoId TEXT NOT NULL,
       date TEXT NOT NULL,
-      createdAt INTEGER NOT NULL
+      createdAt INTEGER NOT NULL,
+      title TEXT NOT NULL DEFAULT ''
     );
 
     CREATE TABLE IF NOT EXISTS posts (

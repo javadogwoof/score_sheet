@@ -89,6 +89,7 @@ const DailyPage = () => {
             <VideoSummaryCard
               key={video.id}
               videoId={video.videoId}
+              title={video.title}
               onClick={() => navigate(`/videos/${video.id}`)}
             />
           ))}

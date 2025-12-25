@@ -1,30 +1,30 @@
 import { memo } from 'react';
 import { Card } from '@/components/Card/Card';
-import { useYouTubeTitleQuery } from '@/hooks/queries/useYouTubeTitleQuery';
 import styles from './VideoSummaryCard.module.scss';
 
 interface VideoSummaryCardProps {
   videoId: string;
+  title: string;
   onClick: () => void;
 }
 
 export const VideoSummaryCard = memo(
-  ({ videoId, onClick }: VideoSummaryCardProps) => {
+  ({ videoId, title, onClick }: VideoSummaryCardProps) => {
     const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-    const { data: title, isLoading } = useYouTubeTitleQuery(videoId);
+
+    // DBのタイトルをそのまま表示（YouTube API呼び出し不要）
+    const displayTitle = title !== '' ? title : videoId;
 
     return (
       <Card onClick={onClick} className={styles.container}>
         <div className={styles.content}>
           <img
             src={thumbnailUrl}
-            alt={title || `YouTube video ${videoId}`}
+            alt={displayTitle}
             className={styles.thumbnail}
           />
           <div className={styles.info}>
-            <p className={styles.videoId}>
-              {isLoading ? '読み込み中...' : title || videoId}
-            </p>
+            <p className={styles.videoId}>{displayTitle}</p>
           </div>
         </div>
       </Card>

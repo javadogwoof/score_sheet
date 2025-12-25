@@ -10,6 +10,7 @@ interface VideoDTO {
   videoId: string;
   date: string;
   createdAt: number;
+  title: string;
 }
 
 interface PostDTO {
@@ -27,6 +28,7 @@ export const postVideo = async (
   videoId: string,
   youtubeVideoId: string,
   date: string,
+  title: string,
 ): Promise<{ videoId: string; postId: string }> => {
   return await retryWithBackoff(async () => {
     const db = getDB();
@@ -38,8 +40,8 @@ export const postVideo = async (
     try {
       // 動画を作成（transaction: falseを指定してbeginTransaction/commitで制御）
       await db.run(
-        'INSERT INTO videos (id, videoId, date, createdAt) VALUES (?, ?, ?, ?)',
-        [videoId, youtubeVideoId, date, now],
+        'INSERT INTO videos (id, videoId, date, createdAt, title) VALUES (?, ?, ?, ?, ?)',
+        [videoId, youtubeVideoId, date, now, title],
         false,
       );
 
@@ -157,6 +159,7 @@ export const getVideosByDate = async (
       return videos.map((video) => ({
         id: video.id,
         videoId: video.videoId,
+        title: video.title,
       }));
     });
   } catch (_error) {
@@ -196,6 +199,7 @@ export const getVideoById = async (id: string): Promise<Video> => {
       return {
         id: video.id,
         videoId: video.videoId,
+        title: video.title,
         posts: posts.map((post) => ({
           id: post.id,
           content: post.contents,
@@ -207,5 +211,29 @@ export const getVideoById = async (id: string): Promise<Video> => {
       throw error;
     }
     throw new RetryableError('Failed to get video by id');
+  }
+};
+
+/**
+ * 動画のタイトルを更新
+ */
+export const updateVideoTitle = async (
+  videoId: string,
+  title: string,
+): Promise<void> => {
+  const db = getDB();
+
+  let result: capSQLiteChanges;
+  try {
+    result = await retryWithBackoff(() =>
+      db.run('UPDATE videos SET title = ? WHERE id = ?', [title, videoId]),
+    );
+  } catch (_error) {
+    throw new RetryableError('Failed to update video title');
+  }
+
+  // リトライ後に存在チェック（リトライ不要なエラー）
+  if (result.changes?.changes === 0) {
+    throw new NotFoundError('Video', videoId);
   }
 };
