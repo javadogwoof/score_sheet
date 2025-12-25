@@ -20,7 +20,7 @@ const DailyPage = () => {
   const { reportError } = usePostHog();
 
   const {
-    data: videos = [],
+    data: videoSummaries = [],
     isLoading: isLoadingVideos,
     error: videosError,
     refetch: refetchVideos,
@@ -78,19 +78,14 @@ const DailyPage = () => {
             }}
           />
         )}
-        {!isLoading && !displayError && videos.length === 0 && (
+        {!isLoading && !displayError && videoSummaries.length === 0 && (
           <EmptyState message="まだ動画がありません" />
         )}
         {!isLoading &&
           !displayError &&
-          videos.length > 0 &&
-          videos.map((video) => (
-            <VideoCard
-              key={video.id}
-              id={video.id}
-              videoId={video.videoId}
-              initialData={video}
-            />
+          videoSummaries.length > 0 &&
+          videoSummaries.map((video) => (
+            <VideoCard key={video.id} id={video.id} videoId={video.videoId} />
           ))}
       </AppMain>
       <PostModal isOpen={isOpen} onClose={close} onSubmit={handleSubmit} />

@@ -1,6 +1,6 @@
 import type { capSQLiteChanges } from '@capacitor-community/sqlite';
 import { getDB } from '../db';
-import type { Video } from '../domain/types';
+import type { Video, VideoSummary } from '../domain/types';
 import { NotFoundError, RetryableError } from '../errors';
 import { retryWithBackoff } from '../retry';
 
@@ -137,14 +137,16 @@ export const deleteReflection = async (postId: string): Promise<void> => {
 };
 
 /**
- * 日付で動画と投稿をまとめて取得（投稿0件の動画も含む）
+ * 日付で動画のメタデータのみ取得（軽量）
  */
-export const getVideosByDate = async (date: string): Promise<Video[]> => {
+export const getVideosByDate = async (
+  date: string,
+): Promise<VideoSummary[]> => {
   try {
     return await retryWithBackoff(async () => {
       const db = getDB();
 
-      // 動画を取得
+      // 動画メタデータのみ取得（投稿は取得しない）
       const videosResult = await db.query(
         'SELECT * FROM videos WHERE date = ? ORDER BY createdAt ASC',
         [date],
@@ -152,30 +154,58 @@ export const getVideosByDate = async (date: string): Promise<Video[]> => {
 
       const videos = (videosResult.values || []) as VideoDTO[];
 
-      // 各動画に紐づく投稿を取得し、ドメイン型に変換
-      const domainVideos: Video[] = [];
-
-      for (const video of videos) {
-        const postsResult = await db.query(
-          'SELECT * FROM posts WHERE videoId = ? ORDER BY createdAt ASC',
-          [video.id],
-        );
-
-        const posts = (postsResult.values || []) as PostDTO[];
-
-        domainVideos.push({
-          id: video.id,
-          videoId: video.videoId,
-          posts: posts.map((post) => ({
-            id: post.id,
-            content: post.contents,
-          })),
-        });
-      }
-
-      return domainVideos;
+      return videos.map((video) => ({
+        id: video.id,
+        videoId: video.videoId,
+      }));
     });
   } catch (_error) {
     throw new RetryableError('Failed to get videos by date');
+  }
+};
+
+/**
+ * IDで動画と投稿の集約を取得
+ */
+export const getVideoById = async (id: string): Promise<Video> => {
+  try {
+    return await retryWithBackoff(async () => {
+      const db = getDB();
+
+      // 動画を取得
+      const videoResult = await db.query(
+        'SELECT * FROM videos WHERE id = ? LIMIT 1',
+        [id],
+      );
+
+      const videos = (videoResult.values || []) as VideoDTO[];
+      if (videos.length === 0) {
+        throw new NotFoundError('Video', id);
+      }
+
+      const video = videos[0];
+
+      // 投稿を取得
+      const postsResult = await db.query(
+        'SELECT * FROM posts WHERE videoId = ? ORDER BY createdAt ASC',
+        [id],
+      );
+
+      const posts = (postsResult.values || []) as PostDTO[];
+
+      return {
+        id: video.id,
+        videoId: video.videoId,
+        posts: posts.map((post) => ({
+          id: post.id,
+          content: post.contents,
+        })),
+      };
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      throw error;
+    }
+    throw new RetryableError('Failed to get video by id');
   }
 };

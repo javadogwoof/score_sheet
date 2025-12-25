@@ -4,18 +4,16 @@ import { Card } from '@/components/Card/Card';
 import { YouTubePlayer } from '@/features/YouTubePlayer';
 import { useAddPostMutation } from '@/hooks/queries/useAddPostMutation';
 import { useVideoQuery } from '@/hooks/queries/useVideoQuery';
-import type { Video } from '@/lib/domain/types';
 import styles from './VideoCard.module.scss';
 
 interface VideoCardProps {
   id: string;
   videoId: string;
-  initialData: Video;
 }
 
 export const VideoCard = memo(
-  ({ id, videoId, initialData }: VideoCardProps) => {
-    const { data: video } = useVideoQuery(id, initialData);
+  ({ id, videoId }: VideoCardProps) => {
+    const { data: video } = useVideoQuery(id);
     const addPostMutation = useAddPostMutation(id);
 
     const [newPostContent, setNewPostContent] = useState('');

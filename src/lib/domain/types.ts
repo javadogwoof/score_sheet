@@ -3,6 +3,13 @@ export interface Post {
   content: string;
 }
 
+// DailyPageで扱う軽量なメタデータ
+export interface VideoSummary {
+  id: string;
+  videoId: string;
+}
+
+// VideoCardで扱う動画と投稿の集約
 export interface Video {
   id: string;
   videoId: string;
