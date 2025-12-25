@@ -45,6 +45,28 @@ export const closeDB = async (): Promise<void> => {
 };
 
 /**
+ * コネクションが有効かチェックして、必要に応じて再接続
+ */
+export const ensureConnection = async (): Promise<void> => {
+  try {
+    if (!db) {
+      await initDB();
+      return;
+    }
+
+    // コネクションが開いているかチェック
+    const isOpen = await db.isDBOpen();
+    if (!isOpen.result) {
+      await db.open();
+    }
+  } catch (_error) {
+    // エラーの場合は完全に再初期化
+    db = null;
+    await initDB();
+  }
+};
+
+/**
  * データベース接続を取得
  */
 export const getDB = (): SQLiteDBConnection => {

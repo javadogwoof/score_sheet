@@ -1,10 +1,11 @@
+import { App as CapacitorApp } from '@capacitor/app';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { initDB } from '@/lib/db';
+import { ensureConnection, initDB } from '@/lib/db';
 import { runMigration } from '@/lib/migration';
-import { initPostHog } from '@/lib/posthog';
+import { initPostHog, reportError } from '@/lib/posthog';
 import './index.css';
 import App from './App.tsx';
 
@@ -26,18 +27,48 @@ const queryClient = new QueryClient({
   },
 });
 
-// DB初期化
+// DB初期化・接続確認（起動時とバックグラウンド復帰時に共通で使用）
+const ensureDatabaseReady = async (isInitialSetup = false) => {
+  if (isInitialSetup) {
+    // 初回起動時は新規接続
+    await initDB();
+  } else {
+    // バックグラウンド復帰時は接続確認・再接続
+    await ensureConnection();
+  }
+
+  // マイグレーションを実行
+  await runMigration();
+};
+
+// DB初期化（起動時のみ）
 const initializeDatabase = async () => {
   try {
-    await initDB();
-    await runMigration();
-    console.log('Database initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
+    await ensureDatabaseReady(true);
   } finally {
     // DB初期化完了後（成功/失敗問わず）スプラッシュスクリーンを非表示
     await SplashScreen.hide();
   }
+};
+
+// アプリのライフサイクルを監視（バックグラウンド復帰時のDB接続確認）
+const setupAppLifecycle = () => {
+  CapacitorApp.addListener('appStateChange', async (state) => {
+    if (state.isActive) {
+      try {
+        await ensureDatabaseReady(false);
+      } catch (error) {
+        console.error('Failed to restore database connection:', error);
+        // PostHogにエラーを報告
+        if (error instanceof Error) {
+          reportError(error, {
+            context: 'backgroundResume',
+            timestamp: Date.now(),
+          });
+        }
+      }
+    }
+  });
 };
 
 // 初期化してからAppをマウント
@@ -47,6 +78,9 @@ const initializeDatabase = async () => {
 
   // DBを初期化
   await initializeDatabase();
+
+  // ライフサイクル監視をセットアップ
+  setupAppLifecycle();
 
   createRoot(rootElement).render(
     <StrictMode>
