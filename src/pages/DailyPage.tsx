@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { IoAdd } from 'react-icons/io5';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { AppMain } from '@/components/AppMain';
 import { EmptyState } from '@/components/EmptyState';
@@ -8,7 +8,7 @@ import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { PostModal, usePostModal } from '@/features/PostModal';
-import { VideoCard } from '@/features/VideoCard';
+import { VideoSummaryCard } from '@/features/VideoSummaryCard';
 import { useAddVideoMutation } from '@/hooks/queries/useAddVideoMutation';
 import { useVideosQuery } from '@/hooks/queries/useVideosQuery';
 import { usePostHog } from '@/hooks/usePostHog';
@@ -16,6 +16,7 @@ import { extractYouTubeVideoId } from '@/lib/youtube';
 
 const DailyPage = () => {
   const { date } = useParams<{ date: string }>();
+  const navigate = useNavigate();
   const { isOpen, open, close } = usePostModal();
   const { reportError } = usePostHog();
 
@@ -85,7 +86,11 @@ const DailyPage = () => {
           !displayError &&
           videoSummaries.length > 0 &&
           videoSummaries.map((video) => (
-            <VideoCard key={video.id} id={video.id} videoId={video.videoId} />
+            <VideoSummaryCard
+              key={video.id}
+              videoId={video.videoId}
+              onClick={() => navigate(`/videos/${video.id}`)}
+            />
           ))}
       </AppMain>
       <PostModal isOpen={isOpen} onClose={close} onSubmit={handleSubmit} />
