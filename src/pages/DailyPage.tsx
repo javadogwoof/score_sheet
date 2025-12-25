@@ -84,14 +84,12 @@ const DailyPage = () => {
         {!isLoading &&
           !displayError &&
           videos.length > 0 &&
-          date &&
           videos.map((video) => (
             <VideoCard
               key={video.id}
               id={video.id}
               videoId={video.videoId}
-              initialPosts={video.posts}
-              date={date}
+              initialData={video}
             />
           ))}
       </AppMain>

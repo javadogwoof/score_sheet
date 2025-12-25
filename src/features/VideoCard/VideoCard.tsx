@@ -1,83 +1,42 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { memo, useCallback, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { IoSend } from 'react-icons/io5';
 import { Card } from '@/components/Card/Card';
 import { YouTubePlayer } from '@/features/YouTubePlayer';
-import { videoKeys } from '@/hooks/queries/keys';
-import type { Post, Video } from '@/lib/domain/types';
-import { NotFoundError } from '@/lib/errors';
-import { addReflectionToVideo } from '@/lib/repositories/reflectionRepository';
+import { useAddPostMutation } from '@/hooks/queries/useAddPostMutation';
+import { useVideoQuery } from '@/hooks/queries/useVideoQuery';
+import type { Video } from '@/lib/domain/types';
 import styles from './VideoCard.module.scss';
 
 interface VideoCardProps {
   id: string;
   videoId: string;
-  initialPosts: Post[];
-  date: string;
+  initialData: Video;
 }
 
 export const VideoCard = memo(
-  ({ id, videoId, initialPosts, date }: VideoCardProps) => {
-    const queryClient = useQueryClient();
+  ({ id, videoId, initialData }: VideoCardProps) => {
+    const { data: video } = useVideoQuery(id, initialData);
+    const addPostMutation = useAddPostMutation(id);
 
-    // VideoCard内で投稿リストを管理
-    const [posts, setPosts] = useState<Post[]>(initialPosts);
     const [newPostContent, setNewPostContent] = useState('');
-
-    // initialPostsが変更されたらpostsを更新（ページ移動後の再表示時）
-    useEffect(() => {
-      setPosts(initialPosts);
-    }, [initialPosts]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setNewPostContent(e.target.value);
     };
 
-    const handleSubmit = useCallback(async () => {
-      if (!newPostContent.trim()) return;
-
-      const content = newPostContent;
-      const newPost: Post = {
-        id: crypto.randomUUID(),
-        content,
-      };
-
-      // 楽観的更新：即座にUIに反映
-      setPosts((prev) => [...prev, newPost]);
-      setNewPostContent('');
-
-      try {
-        // バックグラウンドでDBに保存
-        await addReflectionToVideo(id, content);
-
-        // TanStack Queryのキャッシュも更新（永続化のため）
-        queryClient.setQueryData<Video[]>(
-          videoKeys.byDate(date),
-          (oldVideos) => {
-            if (!oldVideos) return oldVideos;
-
-            const index = oldVideos.findIndex((v) => v.id === id);
-            if (index === -1) return oldVideos;
-
-            const newVideos = [...oldVideos];
-            newVideos[index] = {
-              ...oldVideos[index],
-              posts: [...oldVideos[index].posts, newPost],
-            };
-            return newVideos;
-          },
-        );
-      } catch (error) {
-        // エラー時はロールバック
-        setPosts((prev) => prev.filter((p) => p.id !== newPost.id));
-
-        if (error instanceof NotFoundError) {
-          alert('動画が見つかりません。ページを再読み込みしてください。');
-        } else {
-          alert('投稿の追加に失敗しました');
-        }
+    const handleSubmit = () => {
+      if (newPostContent.trim()) {
+        addPostMutation.mutate({
+          videoId: id,
+          content: newPostContent,
+        });
+        setNewPostContent('');
       }
-    }, [newPostContent, id, date, queryClient]);
+    };
+
+    if (!video) return null;
+
+    const posts = video.posts;
 
     return (
       <Card>
@@ -116,7 +75,7 @@ export const VideoCard = memo(
   },
   (prevProps, nextProps) => {
     // idとvideoIdが同じなら再レンダリングしない
-    // initialPostsとdateの変更は無視（VideoCard内で状態管理するため）
+    // initialDataは初期データなので変更を無視
     return (
       prevProps.id === nextProps.id && prevProps.videoId === nextProps.videoId
     );
