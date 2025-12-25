@@ -27,6 +27,8 @@
     "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4",
     "@capacitor/splash-screen": "^7.0.4",
+    "@tanstack/react-query": "^5.90.12",
+    "@tanstack/react-query-devtools": "^5.91.1",
     "dayjs": "^1.11.19",
     "jeep-sqlite": "^2.8.0",
     "posthog-js": "^1.309.1",

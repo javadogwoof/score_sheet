@@ -1,4 +1,5 @@
 import { SplashScreen } from '@capacitor/splash-screen';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { initDB } from '@/lib/db';
@@ -9,6 +10,21 @@ import App from './App.tsx';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element not found');
+
+// TanStack Query設定
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5分間はキャッシュを使用
+      retry: false, // Repository層でリトライ済み
+      refetchOnWindowFocus: false, // ローカルDBなので不要
+      refetchOnReconnect: false,
+    },
+    mutations: {
+      retry: false,
+    },
+  },
+});
 
 // DB初期化
 const initializeDatabase = async () => {
@@ -34,7 +50,9 @@ const initializeDatabase = async () => {
 
   createRoot(rootElement).render(
     <StrictMode>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </StrictMode>,
   );
 })();

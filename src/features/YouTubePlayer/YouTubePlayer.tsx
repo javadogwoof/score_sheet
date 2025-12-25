@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import styles from './YouTubePlayer.module.scss';
 
 export interface YouTubePlayerProps {
   videoId: string;
 }
 
-export function YouTubePlayer({ videoId }: YouTubePlayerProps) {
+export const YouTubePlayer = memo(({ videoId }: YouTubePlayerProps) => {
   return (
     <iframe
       title="YouTube video player"
@@ -13,4 +14,4 @@ export function YouTubePlayer({ videoId }: YouTubePlayerProps) {
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
     />
   );
-}
+});

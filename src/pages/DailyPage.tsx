@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { IoAdd } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
@@ -9,43 +9,32 @@ import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { PostModal, usePostModal } from '@/features/PostModal';
 import { VideoCard } from '@/features/VideoCard';
-import { usePageState } from '@/hooks/usePageState';
+import { useAddVideoMutation } from '@/hooks/queries/useAddVideoMutation';
+import { useVideosQuery } from '@/hooks/queries/useVideosQuery';
 import { usePostHog } from '@/hooks/usePostHog';
-import { useVideosState } from '@/hooks/useVideosState';
-import { postVideo } from '@/lib/repositories/reflectionRepository';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
 const DailyPage = () => {
   const { date } = useParams<{ date: string }>();
   const { isOpen, open, close } = usePostModal();
-  const { videos, loading, error, loadVideos, addPost } = useVideosState(date);
-  const { pageState, setLoading, setSuccess, setError, setEmpty } =
-    usePageState();
   const { reportError } = usePostHog();
 
-  useEffect(() => {
-    if (loading) {
-      setLoading();
-    } else if (error) {
-      setError(error);
-    } else if (videos.length === 0) {
-      setEmpty();
-    } else {
-      setSuccess();
-    }
-  }, [
-    loading,
-    error,
-    videos.length,
-    setLoading,
-    setError,
-    setEmpty,
-    setSuccess,
-  ]);
+  const {
+    data: videos = [],
+    isLoading: isLoadingVideos,
+    error: videosError,
+    refetch: refetchVideos,
+  } = useVideosQuery(date);
 
-  useEffect(() => {
-    loadVideos();
-  }, [loadVideos]);
+  const addVideoMutation = useAddVideoMutation();
+
+  const displayError = useMemo(() => {
+    if (videosError) return 'データの読み込みに失敗しました';
+    if (addVideoMutation.error) return '動画の追加に失敗しました';
+    return null;
+  }, [videosError, addVideoMutation.error]);
+
+  const isLoading = isLoadingVideos || addVideoMutation.isPending;
 
   const handleSubmit = async (videoUrl: string) => {
     if (!date) return;
@@ -55,14 +44,16 @@ const DailyPage = () => {
 
     try {
       const videoId = crypto.randomUUID();
-      await postVideo(videoId, youtubeVideoId, date);
-      await loadVideos();
+      await addVideoMutation.mutateAsync({
+        videoId,
+        youtubeVideoId,
+        date,
+      });
       close();
-    } catch (error) {
-      if (error instanceof Error) {
-        reportError(error, { context: 'createVideo', videoUrl, date });
+    } catch (err) {
+      if (err instanceof Error) {
+        reportError(err, { context: 'createVideo', videoUrl, date });
       }
-      setError('動画の追加に失敗しました');
     }
   };
 
@@ -76,20 +67,31 @@ const DailyPage = () => {
         }
       />
       <AppMain>
-        {pageState.status === 'loading' && <LoadingState />}
-        {pageState.status === 'error' && (
-          <ErrorState message={pageState.message} onRetry={loadVideos} />
+        {isLoading && <LoadingState />}
+        {displayError && (
+          <ErrorState
+            message={displayError}
+            onRetry={() => {
+              if (videosError) {
+                refetchVideos();
+              }
+            }}
+          />
         )}
-        {pageState.status === 'empty' && (
+        {!isLoading && !displayError && videos.length === 0 && (
           <EmptyState message="まだ動画がありません" />
         )}
-        {pageState.status === 'success' &&
+        {!isLoading &&
+          !displayError &&
+          videos.length > 0 &&
+          date &&
           videos.map((video) => (
             <VideoCard
               key={video.id}
+              id={video.id}
               videoId={video.videoId}
-              posts={video.posts}
-              onAddPost={(content) => addPost(video.id, content)}
+              initialPosts={video.posts}
+              date={date}
             />
           ))}
       </AppMain>
