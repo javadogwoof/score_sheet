@@ -1,17 +1,21 @@
 import { useState } from 'react';
-import { IoPencil } from 'react-icons/io5';
-import { useParams } from 'react-router-dom';
+import { IoEllipsisVertical } from 'react-icons/io5';
+import { useNavigate, useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { AppMain } from '@/components/AppMain';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { VideoCard } from '@/features/VideoCard';
+import { useDeleteVideoMutation } from '@/hooks/queries/useDeleteVideoMutation';
 import { useUpdateVideoTitleMutation } from '@/hooks/queries/useUpdateVideoTitleMutation';
 import { useVideoQuery } from '@/hooks/queries/useVideoQuery';
+import styles from './VideoPage.module.scss';
 
 const VideoPage = () => {
   const { videoId } = useParams<{ videoId: string }>();
+  const navigate = useNavigate();
 
   const {
     data: video,
@@ -22,7 +26,11 @@ const VideoPage = () => {
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
+  const [showMenu, setShowMenu] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const updateTitleMutation = useUpdateVideoTitleMutation(videoId || '');
+  const deleteVideoMutation = useDeleteVideoMutation();
 
   if (!videoId) {
     return (
@@ -40,20 +48,46 @@ const VideoPage = () => {
     video && video.title !== '' ? video.title : video?.videoId || '';
 
   const handleEditTitle = () => {
+    setShowMenu(false);
     setEditedTitle(displayTitle);
     setIsEditingTitle(true);
   };
 
-  const handleSaveTitle = () => {
-    if (editedTitle.trim()) {
+  const handleBlurTitle = () => {
+    if (editedTitle.trim() && editedTitle !== displayTitle) {
       updateTitleMutation.mutate(editedTitle);
+    }
+    setIsEditingTitle(false);
+    setEditedTitle('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleBlurTitle();
+    } else if (e.key === 'Escape') {
       setIsEditingTitle(false);
+      setEditedTitle('');
     }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditingTitle(false);
-    setEditedTitle('');
+  const handleDeleteVideo = () => {
+    setShowMenu(false);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteVideo = () => {
+    if (videoId) {
+      deleteVideoMutation.mutate(videoId, {
+        onSuccess: () => {
+          // DailyPageに戻る
+          if (video?.date) {
+            navigate(`/daily/${video.date}`);
+          } else {
+            navigate('/');
+          }
+        },
+      });
+    }
   };
 
   return (
@@ -63,11 +97,23 @@ const VideoPage = () => {
         showBackButton
         actionButton={
           !isEditingTitle ? (
-            <IconButton
-              icon={<IoPencil />}
-              onClick={handleEditTitle}
-              ariaLabel="タイトルを編集"
-            />
+            <div style={{ position: 'relative' }}>
+              <IconButton
+                icon={<IoEllipsisVertical />}
+                onClick={() => setShowMenu(!showMenu)}
+                ariaLabel="メニュー"
+              />
+              {showMenu && (
+                <div className={styles.menu}>
+                  <button type="button" onClick={handleEditTitle}>
+                    タイトルを編集
+                  </button>
+                  <button type="button" onClick={handleDeleteVideo}>
+                    動画を削除
+                  </button>
+                </div>
+              )}
+            </div>
           ) : undefined
         }
       />
@@ -78,30 +124,14 @@ const VideoPage = () => {
               type="text"
               value={editedTitle}
               onChange={(e) => setEditedTitle(e.target.value)}
+              onBlur={handleBlurTitle}
+              onKeyDown={handleKeyDown}
               style={{
                 width: '100%',
                 padding: '8px',
-                marginBottom: '8px',
                 fontSize: '16px',
               }}
             />
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button
-                type="button"
-                onClick={handleSaveTitle}
-                disabled={!editedTitle.trim()}
-                style={{ padding: '8px 16px' }}
-              >
-                保存
-              </button>
-              <button
-                type="button"
-                onClick={handleCancelEdit}
-                style={{ padding: '8px 16px' }}
-              >
-                キャンセル
-              </button>
-            </div>
           </div>
         )}
         {isLoading && <LoadingState />}
@@ -115,6 +145,14 @@ const VideoPage = () => {
           <VideoCard id={videoId} videoId={video.videoId} />
         )}
       </AppMain>
+
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        title="動画を削除"
+        message="この動画を削除しますか？関連する投稿もすべて削除されます。"
+        onConfirm={confirmDeleteVideo}
+        onCancel={() => setShowDeleteConfirm(false)}
+      />
     </>
   );
 };

@@ -48,6 +48,11 @@ export const useAddPostMutation = (videoId: string) => {
       return { previousVideo };
     },
 
+    // 成功時: DBから正しいデータを再取得
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: videoKeys.byId(videoId) });
+    },
+
     // エラー時: ロールバック
     onError: (_error, _variables, context) => {
       if (context?.previousVideo) {

@@ -1,8 +1,10 @@
 import { memo, useState } from 'react';
-import { IoSend } from 'react-icons/io5';
+import { IoSend, IoTrash } from 'react-icons/io5';
 import { Card } from '@/components/Card/Card';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { YouTubePlayer } from '@/features/YouTubePlayer';
 import { useAddPostMutation } from '@/hooks/queries/useAddPostMutation';
+import { useDeletePostMutation } from '@/hooks/queries/useDeletePostMutation';
 import { useVideoQuery } from '@/hooks/queries/useVideoQuery';
 import styles from './VideoCard.module.scss';
 
@@ -15,8 +17,10 @@ export const VideoCard = memo(
   ({ id, videoId }: VideoCardProps) => {
     const { data: video } = useVideoQuery(id);
     const addPostMutation = useAddPostMutation(id);
+    const deletePostMutation = useDeletePostMutation(id);
 
     const [newPostContent, setNewPostContent] = useState('');
+    const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setNewPostContent(e.target.value);
@@ -29,6 +33,25 @@ export const VideoCard = memo(
           content: newPostContent,
         });
         setNewPostContent('');
+      }
+    };
+
+    const handleDeletePost = (postId: string) => {
+      setDeleteConfirm(postId);
+    };
+
+    const confirmDeletePost = () => {
+      if (deleteConfirm) {
+        deletePostMutation.mutate(deleteConfirm, {
+          onSuccess: () => {
+            setDeleteConfirm(null);
+          },
+          onError: (error) => {
+            console.error('Failed to delete post:', error);
+            // エラー時はダイアログを閉じてエラーを確認できるようにする
+            setDeleteConfirm(null);
+          },
+        });
       }
     };
 
@@ -65,9 +88,25 @@ export const VideoCard = memo(
           {[...posts].reverse().map((post) => (
             <div key={post.id} className={styles.postItem}>
               <p className={styles.postContent}>{post.content}</p>
+              <button
+                type="button"
+                onClick={() => handleDeletePost(post.id)}
+                className={styles.deleteButton}
+                aria-label="投稿を削除"
+              >
+                <IoTrash />
+              </button>
             </div>
           ))}
         </div>
+
+        <ConfirmDialog
+          isOpen={deleteConfirm !== null}
+          title="投稿を削除"
+          message="この投稿を削除しますか？"
+          onConfirm={confirmDeletePost}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       </Card>
     );
   },

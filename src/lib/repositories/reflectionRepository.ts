@@ -200,6 +200,7 @@ export const getVideoById = async (id: string): Promise<Video> => {
         id: video.id,
         videoId: video.videoId,
         title: video.title,
+        date: video.date,
         posts: posts.map((post) => ({
           id: post.id,
           content: post.contents,
@@ -230,6 +231,27 @@ export const updateVideoTitle = async (
     );
   } catch (_error) {
     throw new RetryableError('Failed to update video title');
+  }
+
+  // リトライ後に存在チェック（リトライ不要なエラー）
+  if (result.changes?.changes === 0) {
+    throw new NotFoundError('Video', videoId);
+  }
+};
+
+/**
+ * 動画を削除（関連する投稿も自動削除される）
+ */
+export const deleteVideo = async (videoId: string): Promise<void> => {
+  const db = getDB();
+
+  let result: capSQLiteChanges;
+  try {
+    result = await retryWithBackoff(() =>
+      db.run('DELETE FROM videos WHERE id = ?', [videoId]),
+    );
+  } catch (_error) {
+    throw new RetryableError('Failed to delete video');
   }
 
   // リトライ後に存在チェック（リトライ不要なエラー）

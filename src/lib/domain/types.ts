@@ -15,5 +15,6 @@ export interface Video {
   id: string;
   videoId: string;
   title: string;
+  date: string;
   posts: Post[];
 }
