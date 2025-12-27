@@ -19,7 +19,7 @@ export const AppHeader = ({
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   return (
