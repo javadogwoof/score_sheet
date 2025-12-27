@@ -5,6 +5,7 @@ import { AppMain } from '@/components/AppMain';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { DropdownMenu, type MenuItem } from '@/components/DropdownMenu';
 import { ErrorState } from '@/components/ErrorState';
+import { InlineEdit } from '@/components/InlineEdit';
 import { LoadingState } from '@/components/LoadingState';
 import { VideoCard } from '@/features/VideoCard';
 import { useDeleteVideoMutation } from '@/hooks/queries/useDeleteVideoMutation';
@@ -23,7 +24,6 @@ const VideoPage = () => {
   } = useVideoQuery(videoId || '');
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [editedTitle, setEditedTitle] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const updateTitleMutation = useUpdateVideoTitleMutation(videoId || '');
@@ -45,25 +45,16 @@ const VideoPage = () => {
     video && video.title !== '' ? video.title : video?.videoId || '';
 
   const handleEditTitle = () => {
-    setEditedTitle(displayTitle);
     setIsEditingTitle(true);
   };
 
-  const handleBlurTitle = () => {
-    if (editedTitle.trim() && editedTitle !== displayTitle) {
-      updateTitleMutation.mutate(editedTitle);
-    }
+  const handleSaveTitle = (newTitle: string) => {
+    updateTitleMutation.mutate(newTitle);
     setIsEditingTitle(false);
-    setEditedTitle('');
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleBlurTitle();
-    } else if (e.key === 'Escape') {
-      setIsEditingTitle(false);
-      setEditedTitle('');
-    }
+  const handleCancelEdit = () => {
+    setIsEditingTitle(false);
   };
 
   const handleDeleteVideo = () => {
@@ -108,20 +99,11 @@ const VideoPage = () => {
       />
       <AppMain>
         {isEditingTitle && (
-          <div style={{ padding: '16px', backgroundColor: '#f5f5f5' }}>
-            <input
-              type="text"
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              onBlur={handleBlurTitle}
-              onKeyDown={handleKeyDown}
-              style={{
-                width: '100%',
-                padding: '8px',
-                fontSize: '16px',
-              }}
-            />
-          </div>
+          <InlineEdit
+            initialValue={displayTitle}
+            onSave={handleSaveTitle}
+            onCancel={handleCancelEdit}
+          />
         )}
         {isLoading && <LoadingState />}
         {error && (
