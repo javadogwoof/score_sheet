@@ -31,7 +31,7 @@ const AnalysisPage = () => {
   } = usePostsByMonthQuery(selectedMonth);
 
   const handleVideoClick = (videoInternalId: string) => {
-    navigate(`/videos/${videoInternalId}`);
+    navigate(`/insights/${videoInternalId}`);
   };
 
   const handleMonthSelect = (date: Date) => {

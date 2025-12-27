@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { deleteReflection } from '@/lib/repositories/reflectionRepository';
+import { deleteInsight } from '@/lib/repositories/reflectionRepository';
 import { videoKeys } from './keys';
 
 export const useDeletePostMutation = (videoId: string) => {
@@ -7,7 +7,7 @@ export const useDeletePostMutation = (videoId: string) => {
 
   return useMutation({
     mutationFn: async (postId: string) => {
-      await deleteReflection(postId);
+      await deleteInsight(postId);
     },
     onSuccess: () => {
       // 該当Videoのキャッシュを無効化

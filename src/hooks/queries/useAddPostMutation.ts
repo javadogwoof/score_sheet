@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Post, Video } from '@/lib/domain/types';
-import { addReflectionToVideo } from '@/lib/repositories/reflectionRepository';
+import type { Insight, Video } from '@/lib/domain/types';
+import { addInsightToVideo } from '@/lib/repositories/reflectionRepository';
 import { videoKeys } from './keys';
 
 interface AddPostParams {
@@ -17,7 +17,7 @@ export const useAddPostMutation = (videoId: string) => {
 
   return useMutation<void, Error, AddPostParams, MutationContext>({
     mutationFn: async ({ videoId, content }) => {
-      await addReflectionToVideo(videoId, content);
+      await addInsightToVideo(videoId, content);
     },
 
     // 楽観的更新: mutationFn実行前
@@ -31,9 +31,12 @@ export const useAddPostMutation = (videoId: string) => {
       );
 
       // 楽観的更新を適用
-      const newPost: Post = {
+      const newInsight: Insight = {
         id: crypto.randomUUID(),
         content,
+        videoId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       };
 
       queryClient.setQueryData<Video>(videoKeys.byId(videoId), (oldVideo) => {
@@ -41,7 +44,7 @@ export const useAddPostMutation = (videoId: string) => {
 
         return {
           ...oldVideo,
-          posts: [...oldVideo.posts, newPost],
+          posts: [...oldVideo.posts, newInsight],
         };
       });
 

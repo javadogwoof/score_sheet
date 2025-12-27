@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { SQLiteDBConnection } from '@capacitor-community/sqlite';
 import {
-  updateReflection,
-  deleteReflection,
+  updateInsight,
+  deleteInsight,
   postVideo,
 } from '@/lib/repositories/reflectionRepository';
 import { NotFoundError, RetryableError } from '@/lib/errors';
@@ -31,14 +31,14 @@ describe('reflectionRepository', () => {
     vi.mocked(db.getDB).mockReturnValue(mockDB as unknown as SQLiteDBConnection);
   });
 
-  describe('updateReflection', () => {
+  describe('updateInsight', () => {
     it('正常に更新された場合、エラーをthrowしない', async () => {
       vi.mocked(mockDB.run).mockResolvedValue({
         changes: { changes: 1 },
       });
 
       await expect(
-        updateReflection('post-id', 'updated content'),
+        updateInsight('post-id', 'updated content'),
       ).resolves.toBeUndefined();
 
       expect(mockDB.run).toHaveBeenCalled();
@@ -51,11 +51,11 @@ describe('reflectionRepository', () => {
       });
 
       await expect(
-        updateReflection('non-existent-id', 'content'),
+        updateInsight('non-existent-id', 'content'),
       ).rejects.toThrow(NotFoundError);
 
       await expect(
-        updateReflection('non-existent-id', 'content'),
+        updateInsight('non-existent-id', 'content'),
       ).rejects.toThrow('Post with id non-existent-id does not exist');
     });
 
@@ -63,7 +63,7 @@ describe('reflectionRepository', () => {
       const dbError = new Error('Database connection failed');
       vi.mocked(mockDB.run).mockRejectedValue(dbError);
 
-      await expect(updateReflection('post-id', 'content')).rejects.toThrow(
+      await expect(updateInsight('post-id', 'content')).rejects.toThrow(
         RetryableError,
       );
 
@@ -72,13 +72,13 @@ describe('reflectionRepository', () => {
     });
   });
 
-  describe('deleteReflection', () => {
+  describe('deleteInsight', () => {
     it('正常に削除された場合、エラーをthrowしない', async () => {
       vi.mocked(mockDB.run).mockResolvedValue({
         changes: { changes: 1 },
       });
 
-      await expect(deleteReflection('post-id')).resolves.toBeUndefined();
+      await expect(deleteInsight('post-id')).resolves.toBeUndefined();
 
       expect(mockDB.run).toHaveBeenCalled();
     });
@@ -88,7 +88,7 @@ describe('reflectionRepository', () => {
         changes: { changes: 0 },
       });
 
-      await expect(deleteReflection('non-existent-id')).rejects.toThrow(
+      await expect(deleteInsight('non-existent-id')).rejects.toThrow(
         NotFoundError,
       );
     });

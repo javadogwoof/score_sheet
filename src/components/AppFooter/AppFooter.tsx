@@ -10,7 +10,7 @@ interface Tab {
 
 const tabs: Tab[] = [
   { path: '/', icon: <IoHome />, label: 'ホーム' },
-  { path: '/videos', icon: <IoPlay />, label: '動画' },
+  { path: '/insights', icon: <IoPlay />, label: '気付き' },
   { path: '/analysis', icon: <IoStatsChart />, label: '自己分析' },
   { path: '/goals', icon: <IoFlag />, label: '目標設定' },
 ];

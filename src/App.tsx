@@ -7,8 +7,8 @@ import DailyPage from '@/pages/DailyPage';
 import GoalDetailPage from '@/pages/GoalDetailPage';
 import GoalsPage from '@/pages/GoalsPage';
 import HomePage from '@/pages/HomePage';
-import VideoPage from '@/pages/VideoPage';
-import VideosPage from '@/pages/VideosPage';
+import InsightPage from '@/pages/InsightPage';
+import InsightsPage from '@/pages/InsightsPage';
 
 function App() {
   return (
@@ -17,14 +17,14 @@ function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/videos" element={<VideosPage />} />
+            <Route path="/insights" element={<InsightsPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
             <Route path="/goals" element={<GoalsPage />} />
           </Route>
 
           {/* フッタータブなしのページ */}
           <Route path="/daily/:date" element={<DailyPage />} />
-          <Route path="/videos/:videoId" element={<VideoPage />} />
+          <Route path="/insights/:videoId" element={<InsightPage />} />
           <Route path="/goals/:goalId" element={<GoalDetailPage />} />
         </Routes>
       </BrowserRouter>

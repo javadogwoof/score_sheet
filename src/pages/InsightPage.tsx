@@ -12,7 +12,7 @@ import { useDeleteVideoMutation } from '@/hooks/queries/useDeleteVideoMutation';
 import { useUpdateVideoTitleMutation } from '@/hooks/queries/useUpdateVideoTitleMutation';
 import { useVideoQuery } from '@/hooks/queries/useVideoQuery';
 
-const VideoPage = () => {
+const InsightPage = () => {
   const { videoId } = useParams<{ videoId: string }>();
   const navigate = useNavigate();
 
@@ -34,7 +34,7 @@ const VideoPage = () => {
       <>
         <AppHeader showBackButton />
         <AppMain>
-          <ErrorState message="動画IDが見つかりません" />
+          <ErrorState message="気付きIDが見つかりません" />
         </AppMain>
       </>
     );
@@ -72,7 +72,7 @@ const VideoPage = () => {
       onClick: handleEditTitle,
     },
     {
-      label: '動画を削除',
+      label: '気付きを削除',
       onClick: handleDeleteVideo,
     },
   ];
@@ -93,7 +93,7 @@ const VideoPage = () => {
         {isLoading && <LoadingState />}
         {error && (
           <ErrorState
-            message="動画の読み込みに失敗しました"
+            message="気付きの読み込みに失敗しました"
             onRetry={refetch}
           />
         )}
@@ -104,8 +104,8 @@ const VideoPage = () => {
 
       <ConfirmDialog
         isOpen={showDeleteConfirm}
-        title="動画を削除"
-        message="この動画を削除しますか？関連する投稿もすべて削除されます。"
+        title="気付きを削除"
+        message="この気付きを削除しますか？関連する投稿もすべて削除されます。"
         onConfirm={confirmDeleteVideo}
         onCancel={() => setShowDeleteConfirm(false)}
       />
@@ -113,4 +113,4 @@ const VideoPage = () => {
   );
 };
 
-export default VideoPage;
+export default InsightPage;

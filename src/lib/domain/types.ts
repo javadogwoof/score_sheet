@@ -1,6 +1,10 @@
-export interface Post {
+export interface Insight {
   id: string;
   content: string;
+  videoId?: string;
+  date?: string; // YYYY-MM-DD形式（動画と紐づかない投稿用）
+  createdAt: number;
+  updatedAt: number;
 }
 
 // 目標の優先度
@@ -45,5 +49,5 @@ export interface Video {
   youtubeVideoId: string;
   title: string;
   date: string;
-  posts: Post[];
+  posts: Insight[];
 }

@@ -17,7 +17,7 @@ import { useVideosQuery } from '@/hooks/queries/useVideosQuery';
 import { usePostHog } from '@/hooks/usePostHog';
 import { extractYouTubeVideoId } from '@/lib/youtube';
 
-const VideosPage = () => {
+const InsightsPage = () => {
   const navigate = useNavigate();
   const { reportError } = usePostHog();
 
@@ -39,7 +39,7 @@ const VideosPage = () => {
 
   const displayError = useMemo(() => {
     if (videosError) return 'データの読み込みに失敗しました';
-    if (addVideoMutation.error) return '動画の追加に失敗しました';
+    if (addVideoMutation.error) return '気付きの追加に失敗しました';
     return null;
   }, [videosError, addVideoMutation.error]);
 
@@ -97,7 +97,7 @@ const VideosPage = () => {
           />
         )}
         {!isLoading && !displayError && videoSummaries.length === 0 && (
-          <EmptyState message="まだ動画がありません" />
+          <EmptyState message="まだ気付きがありません" />
         )}
         {!isLoading &&
           !displayError &&
@@ -107,7 +107,7 @@ const VideosPage = () => {
               key={video.id}
               youtubeVideoId={video.youtubeVideoId}
               title={video.title}
-              onClick={() => navigate(`/videos/${video.id}`)}
+              onClick={() => navigate(`/insights/${video.id}`)}
             />
           ))}
       </AppMain>
@@ -121,10 +121,10 @@ const VideosPage = () => {
       <FloatingActionButton
         icon={<IoAdd />}
         onClick={open}
-        ariaLabel="動画を追加"
+        ariaLabel="気付きを追加"
       />
     </>
   );
 };
 
-export default VideosPage;
+export default InsightsPage;

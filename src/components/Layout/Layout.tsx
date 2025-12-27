@@ -3,7 +3,7 @@ import { AppFooter } from '@/components/AppFooter';
 import styles from './Layout.module.scss';
 
 // フッタータブを表示しないパス
-const pathsWithoutFooter = ['/daily/', '/videos/'];
+const pathsWithoutFooter = ['/daily/', '/insights/'];
 
 export const Layout = () => {
   const location = useLocation();

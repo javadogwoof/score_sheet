@@ -15,10 +15,11 @@ export const runMigration = async (): Promise<void> => {
       title TEXT NOT NULL DEFAULT ''
     );
 
-    CREATE TABLE IF NOT EXISTS posts (
+    CREATE TABLE IF NOT EXISTS insights (
       id TEXT PRIMARY KEY,
-      videoId TEXT NOT NULL,
-      contents TEXT,
+      videoId TEXT,
+      date TEXT,
+      content TEXT,
       createdAt INTEGER NOT NULL,
       updatedAt INTEGER NOT NULL,
       FOREIGN KEY (videoId) REFERENCES videos(id) ON DELETE CASCADE
@@ -36,7 +37,8 @@ export const runMigration = async (): Promise<void> => {
     );
 
     CREATE INDEX IF NOT EXISTS idx_videos_date ON videos(date);
-    CREATE INDEX IF NOT EXISTS idx_posts_videoId ON posts(videoId);
+    CREATE INDEX IF NOT EXISTS idx_insights_videoId ON insights(videoId);
+    CREATE INDEX IF NOT EXISTS idx_insights_date ON insights(date);
     CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
     CREATE INDEX IF NOT EXISTS idx_goals_deadline ON goals(deadline);
   `;

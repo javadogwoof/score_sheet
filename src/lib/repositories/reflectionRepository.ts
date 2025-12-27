@@ -13,10 +13,11 @@ interface VideoDTO {
   title: string;
 }
 
-interface PostDTO {
+interface InsightDTO {
   id: string;
-  videoId: string;
-  contents: string;
+  videoId: string | null;
+  date: string | null;
+  content: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -58,13 +59,13 @@ export const postVideo = async (
 /**
  * 既存動画に振り返り投稿を追加
  */
-export const addReflectionToVideo = async (
+export const addInsightToVideo = async (
   videoId: string,
-  contents: string,
+  content: string,
 ): Promise<string> => {
   const db = getDB();
   const now = Date.now();
-  const postId = crypto.randomUUID();
+  const insightId = crypto.randomUUID();
 
   // 動画が存在するか確認（ドメイン制約チェック、リトライ不要）
   const videoResult = await retryWithBackoff(() =>
@@ -78,63 +79,88 @@ export const addReflectionToVideo = async (
   try {
     await retryWithBackoff(() =>
       db.run(
-        'INSERT INTO posts (id, videoId, contents, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-        [postId, videoId, contents, now, now],
+        'INSERT INTO insights (id, videoId, date, content, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
+        [insightId, videoId, null, content, now, now],
       ),
     );
   } catch (_error) {
-    throw new RetryableError('Failed to add reflection to video');
+    throw new RetryableError('Failed to add insight to video');
   }
 
-  return postId;
+  return insightId;
+};
+
+/**
+ * 動画と紐づかない単体の投稿を追加
+ */
+export const addStandaloneInsight = async (
+  date: string,
+  content: string,
+): Promise<string> => {
+  const db = getDB();
+  const now = Date.now();
+  const insightId = crypto.randomUUID();
+
+  try {
+    await retryWithBackoff(() =>
+      db.run(
+        'INSERT INTO insights (id, videoId, date, content, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
+        [insightId, null, date, content, now, now],
+      ),
+    );
+  } catch (_error) {
+    throw new RetryableError('Failed to add standalone insight');
+  }
+
+  return insightId;
 };
 
 /**
  * 振り返り投稿の内容を更新
  */
-export const updateReflection = async (
-  postId: string,
-  contents: string,
+export const updateInsight = async (
+  insightId: string,
+  content: string,
 ): Promise<void> => {
   const db = getDB();
 
   let result: capSQLiteChanges;
   try {
     result = await retryWithBackoff(() =>
-      db.run('UPDATE posts SET contents = ?, updatedAt = ? WHERE id = ?', [
-        contents,
+      db.run('UPDATE insights SET content = ?, updatedAt = ? WHERE id = ?', [
+        content,
         Date.now(),
-        postId,
+        insightId,
       ]),
     );
   } catch (_error) {
-    throw new RetryableError('Failed to update reflection');
+    throw new RetryableError('Failed to update insight');
   }
 
   // リトライ後に存在チェック（リトライ不要なエラー）
   if (result.changes?.changes === 0) {
-    throw new NotFoundError('Post', postId);
+    throw new NotFoundError('Insight', insightId);
   }
 };
 
 /**
  * 振り返り投稿を削除（動画は残る）
  */
-export const deleteReflection = async (postId: string): Promise<void> => {
+export const deleteInsight = async (insightId: string): Promise<void> => {
   const db = getDB();
 
   let result: capSQLiteChanges;
   try {
     result = await retryWithBackoff(() =>
-      db.run('DELETE FROM posts WHERE id = ?', [postId]),
+      db.run('DELETE FROM insights WHERE id = ?', [insightId]),
     );
   } catch (_error) {
-    throw new RetryableError('Failed to delete reflection');
+    throw new RetryableError('Failed to delete insight');
   }
 
   // リトライ後に存在チェック（リトライ不要なエラー）
   if (result.changes?.changes === 0) {
-    throw new NotFoundError('Post', postId);
+    throw new NotFoundError('Insight', insightId);
   }
 };
 
@@ -189,21 +215,25 @@ export const getVideoById = async (id: string): Promise<Video> => {
       const video = videos[0];
 
       // 投稿を取得
-      const postsResult = await db.query(
-        'SELECT * FROM posts WHERE videoId = ? ORDER BY createdAt ASC',
+      const insightsResult = await db.query(
+        'SELECT * FROM insights WHERE videoId = ? ORDER BY createdAt ASC',
         [id],
       );
 
-      const posts = (postsResult.values || []) as PostDTO[];
+      const insights = (insightsResult.values || []) as InsightDTO[];
 
       return {
         id: video.id,
         youtubeVideoId: video.videoId,
         title: video.title,
         date: video.date,
-        posts: posts.map((post) => ({
-          id: post.id,
-          content: post.contents,
+        posts: insights.map((insight) => ({
+          id: insight.id,
+          content: insight.content,
+          videoId: insight.videoId ?? undefined,
+          date: insight.date ?? undefined,
+          createdAt: insight.createdAt,
+          updatedAt: insight.updatedAt,
         })),
       };
     });
@@ -273,23 +303,23 @@ export const getPostsByMonth = async (
       // 投稿と動画情報をJOINして、指定月の投稿のみ取得
       const result = await db.query(
         `SELECT
-          posts.id,
-          posts.contents,
-          posts.createdAt,
+          insights.id,
+          insights.content,
+          insights.createdAt,
           videos.id as videoInternalId,
           videos.videoId,
           videos.title as videoTitle,
           videos.date as videoDate
-        FROM posts
-        INNER JOIN videos ON posts.videoId = videos.id
+        FROM insights
+        INNER JOIN videos ON insights.videoId = videos.id
         WHERE videos.date LIKE ?
-        ORDER BY posts.createdAt DESC`,
+        ORDER BY insights.createdAt DESC`,
         [`${yearMonth}%`],
       );
 
-      const posts = (result.values || []) as Array<{
+      const insights = (result.values || []) as Array<{
         id: string;
-        contents: string;
+        content: string;
         createdAt: number;
         videoInternalId: string;
         videoId: string;
@@ -297,14 +327,14 @@ export const getPostsByMonth = async (
         videoDate: string;
       }>;
 
-      return posts.map((post) => ({
-        id: post.id,
-        content: post.contents,
-        createdAt: post.createdAt,
-        videoInternalId: post.videoInternalId,
-        youtubeVideoId: post.videoId,
-        videoTitle: post.videoTitle,
-        videoDate: post.videoDate,
+      return insights.map((insight) => ({
+        id: insight.id,
+        content: insight.content,
+        createdAt: insight.createdAt,
+        videoInternalId: insight.videoInternalId,
+        youtubeVideoId: insight.videoId,
+        videoTitle: insight.videoTitle,
+        videoDate: insight.videoDate,
       }));
     });
   } catch (_error) {
