@@ -10,11 +10,11 @@ import styles from './VideoCard.module.scss';
 
 interface VideoCardProps {
   id: string;
-  videoId: string;
+  youtubeVideoId: string;
 }
 
 export const VideoCard = memo(
-  ({ id, videoId }: VideoCardProps) => {
+  ({ id, youtubeVideoId }: VideoCardProps) => {
     const { data: video } = useVideoQuery(id);
     const addPostMutation = useAddPostMutation(id);
     const deletePostMutation = useDeletePostMutation(id);
@@ -62,7 +62,7 @@ export const VideoCard = memo(
     return (
       <Card>
         <div className={styles.container}>
-          <YouTubePlayer videoId={videoId} />
+          <YouTubePlayer videoId={youtubeVideoId} />
 
           {/* 新規投稿入力 */}
           <div className={styles.inputSection}>
@@ -111,10 +111,11 @@ export const VideoCard = memo(
     );
   },
   (prevProps, nextProps) => {
-    // idとvideoIdが同じなら再レンダリングしない
+    // idとyoutubeVideoIdが同じなら再レンダリングしない
     // initialDataは初期データなので変更を無視
     return (
-      prevProps.id === nextProps.id && prevProps.videoId === nextProps.videoId
+      prevProps.id === nextProps.id &&
+      prevProps.youtubeVideoId === nextProps.youtubeVideoId
     );
   },
 );

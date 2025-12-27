@@ -42,7 +42,7 @@ const VideoPage = () => {
 
   // DBのタイトルをそのまま表示（YouTube API呼び出し不要）
   const displayTitle =
-    video && video.title !== '' ? video.title : video?.videoId || '';
+    video && video.title !== '' ? video.title : video?.youtubeVideoId || '';
 
   const handleEditTitle = () => {
     setIsEditingTitle(true);
@@ -98,7 +98,7 @@ const VideoPage = () => {
           />
         )}
         {!isLoading && !error && video && (
-          <VideoCard id={videoId} videoId={video.videoId} />
+          <VideoCard id={videoId} youtubeVideoId={video.youtubeVideoId} />
         )}
       </AppMain>
 

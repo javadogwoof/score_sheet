@@ -9,7 +9,7 @@ export interface PostDetail {
   content: string;
   createdAt: number;
   videoInternalId: string; // DB内の動画ID（VideoPageへの遷移用）
-  videoId: string; // YouTubeのvideoId
+  youtubeVideoId: string; // YouTubeのvideoId
   videoTitle: string;
   videoDate: string;
 }
@@ -17,14 +17,14 @@ export interface PostDetail {
 // DailyPageで扱う軽量なメタデータ
 export interface VideoSummary {
   id: string;
-  videoId: string;
+  youtubeVideoId: string;
   title: string;
 }
 
 // VideoCardで扱う動画と投稿の集約
 export interface Video {
   id: string;
-  videoId: string;
+  youtubeVideoId: string;
   title: string;
   date: string;
   posts: Post[];

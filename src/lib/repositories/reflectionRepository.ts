@@ -158,7 +158,7 @@ export const getVideosByDate = async (
 
       return videos.map((video) => ({
         id: video.id,
-        videoId: video.videoId,
+        youtubeVideoId: video.videoId,
         title: video.title,
       }));
     });
@@ -198,7 +198,7 @@ export const getVideoById = async (id: string): Promise<Video> => {
 
       return {
         id: video.id,
-        videoId: video.videoId,
+        youtubeVideoId: video.videoId,
         title: video.title,
         date: video.date,
         posts: posts.map((post) => ({
@@ -302,7 +302,7 @@ export const getPostsByMonth = async (
         content: post.contents,
         createdAt: post.createdAt,
         videoInternalId: post.videoInternalId,
-        videoId: post.videoId,
+        youtubeVideoId: post.videoId,
         videoTitle: post.videoTitle,
         videoDate: post.videoDate,
       }));

@@ -105,7 +105,7 @@ const VideosPage = () => {
           videoSummaries.map((video) => (
             <VideoSummaryCard
               key={video.id}
-              videoId={video.videoId}
+              youtubeVideoId={video.youtubeVideoId}
               title={video.title}
               onClick={() => navigate(`/videos/${video.id}`)}
             />
