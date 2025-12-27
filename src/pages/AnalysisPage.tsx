@@ -55,7 +55,7 @@ const AnalysisPage = () => {
 
         <div className={styles.postsSection}>
           <h2 className={styles.sectionTitle}>
-            {dayjs(selectedMonth).format('M月の気付き一覧')}
+            {dayjs(selectedMonth).format('M月の気付き')}
           </h2>
 
           {isLoading && <LoadingState />}
@@ -78,8 +78,11 @@ const AnalysisPage = () => {
                 postContent={post.content}
                 postCreatedAt={post.createdAt}
                 videoTitle={post.videoTitle}
-                videoDate={post.videoDate}
-                onVideoClick={() => handleVideoClick(post.videoInternalId)}
+                onVideoClick={
+                  post.videoInternalId
+                    ? () => handleVideoClick(post.videoInternalId!)
+                    : undefined
+                }
               />
             ))}
         </div>

@@ -10,7 +10,7 @@ export const GoalSection = () => {
   const { data: goals = [] } = useGoalsQuery();
   const addGoalMutation = useAddGoalMutation();
 
-  // 未完了の目標のみを表示
+  // 未達成の目標のみを表示
   const incompleteGoals = useMemo(
     () => goals.filter((goal) => goal.status === 'incomplete'),
     [goals],
@@ -27,7 +27,7 @@ export const GoalSection = () => {
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.title}>未完了の目標</h2>
+      <h2 className={styles.title}>未達成の目標</h2>
       <GoalList goals={incompleteGoals} />
       <GoalQuickAdd onAdd={handleAddGoal} />
     </div>

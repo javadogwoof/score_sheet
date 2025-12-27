@@ -4,35 +4,39 @@
 
 .videoInfo {
   cursor: pointer;
-  padding: 8px 12px;
-  background-color: #f5f5f5;
-  border-radius: 6px;
-  margin-bottom: 12px;
-  transition: background-color 0.2s;
+  padding: 4px 8px;
+  background-color: transparent;
   border: none;
-  width: 100%;
-  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  transition: opacity 0.2s;
+  max-width: 100%;
 
   &:hover {
-    background-color: #e8e8e8;
+    opacity: 0.7;
   }
 
   &:active {
-    background-color: #ddd;
+    opacity: 0.5;
   }
 }
 
-.videoTitle {
-  margin: 0 0 4px 0;
+.videoIcon {
   font-size: 14px;
-  font-weight: 600;
-  color: #333;
+  color: #007bff;
+  flex-shrink: 0;
 }
 
-.date {
-  margin: 0;
+.videoTitle {
   font-size: 12px;
+  font-weight: 500;
   color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px;
 }
 
 .postContent {

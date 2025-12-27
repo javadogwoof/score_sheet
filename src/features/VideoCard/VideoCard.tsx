@@ -1,6 +1,6 @@
 import { memo, useState } from 'react';
 import { IoSend, IoTrash } from 'react-icons/io5';
-import { Card } from '@/components/Card/Card';
+import { Card } from '@/components/Card';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { YouTubePlayer } from '@/features/YouTubePlayer';
 import { useAddPostMutation } from '@/hooks/queries/useAddPostMutation';

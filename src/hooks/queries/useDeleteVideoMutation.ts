@@ -15,6 +15,11 @@ export const useDeleteVideoMutation = () => {
         queryKey: videoKeys.all,
         predicate: (query) => query.queryKey[1] === 'byDate',
       });
+      // 全てのpostsByDateクエリを無効化
+      queryClient.invalidateQueries({
+        queryKey: videoKeys.all,
+        predicate: (query) => query.queryKey[1] === 'postsByDate',
+      });
       // 全ての月のpostsByMonthキャッシュを無効化
       queryClient.invalidateQueries({
         queryKey: videoKeys.all,

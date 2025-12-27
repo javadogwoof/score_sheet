@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { Card } from '@/components/Card/Card';
+import { Card } from '@/components/Card';
 import type { GoalPriority } from '@/lib/domain/types';
 import styles from './GoalForm.module.scss';
 

@@ -30,10 +30,10 @@ export interface PostDetail {
   id: string;
   content: string;
   createdAt: number;
-  videoInternalId: string; // DB内の動画ID（VideoPageへの遷移用）
-  youtubeVideoId: string; // YouTubeのvideoId
-  videoTitle: string;
-  videoDate: string;
+  videoInternalId?: string; // DB内の動画ID（VideoPageへの遷移用）
+  youtubeVideoId?: string; // YouTubeのvideoId
+  videoTitle?: string;
+  videoDate?: string;
 }
 
 // DailyPageで扱う軽量なメタデータ

@@ -1,8 +1,8 @@
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import { IoAdd, IoCheckmark, IoClose } from 'react-icons/io5';
+import { IoCheckmark, IoClose } from 'react-icons/io5';
 import { CalendarModal } from '@/components/CalendarModal';
-import { Card } from '@/components/Card/Card';
+import { Card } from '@/components/Card';
 import type { GoalPriority } from '@/lib/domain/types';
 import styles from './GoalQuickAdd.module.scss';
 
@@ -74,8 +74,7 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
           className={styles.addButton}
           aria-label="目標を追加"
         >
-          <IoAdd className={styles.icon} />
-          <span className={styles.buttonLabel}>目標</span>
+          <span className={styles.buttonLabel}>目標を追加</span>
         </button>
       </div>
     );

@@ -1,0 +1,1 @@
+export { InsightQuickAdd } from './InsightQuickAdd';

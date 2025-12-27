@@ -54,6 +54,13 @@ export const useAddPostMutation = (videoId: string) => {
     // 成功時: DBから正しいデータを再取得
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: videoKeys.byId(videoId) });
+
+      // 動画の日付を取得してpostsByDateキャッシュを無効化
+      const video = queryClient.getQueryData<Video>(videoKeys.byId(videoId));
+      if (video?.date) {
+        queryClient.invalidateQueries({ queryKey: videoKeys.postsByDate(video.date) });
+      }
+
       // 全ての月のpostsByMonthキャッシュを無効化
       queryClient.invalidateQueries({
         queryKey: videoKeys.all,

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import { CalendarModal } from '@/components/CalendarModal';
-import { Card } from '@/components/Card/Card';
+import { Card } from '@/components/Card';
 import type { Goal, GoalPriority } from '@/lib/domain/types';
 import styles from './GoalEditForm.module.scss';
 

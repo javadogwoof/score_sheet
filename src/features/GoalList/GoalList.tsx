@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { IoArrowUndo, IoCheckmark, IoTrash } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
-import { Card } from '@/components/Card/Card';
+import { Card } from '@/components/Card';
 import type { Goal } from '@/lib/domain/types';
 import styles from './GoalList.module.scss';
 
@@ -85,7 +85,7 @@ export const GoalList = ({
                       onRestore(goal.id);
                     }}
                     className={styles.restoreButton}
-                    aria-label="未完了に戻す"
+                    aria-label="未達成に戻す"
                   >
                     <IoArrowUndo />
                   </button>
@@ -98,7 +98,7 @@ export const GoalList = ({
                       onComplete(goal.id);
                     }}
                     className={styles.completeButton}
-                    aria-label="完了"
+                    aria-label="達成"
                   >
                     <IoCheckmark />
                   </button>

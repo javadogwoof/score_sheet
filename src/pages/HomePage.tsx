@@ -14,7 +14,7 @@ const HomePage = () => {
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
   const [goalToComplete, setGoalToComplete] = useState<string | null>(null);
 
-  // 未完了の目標のみを表示
+  // 未達成の目標のみを表示
   const incompleteGoals = useMemo(
     () => goals.filter((goal) => goal.status === 'incomplete'),
     [goals],
@@ -48,7 +48,7 @@ const HomePage = () => {
             color: '#333',
           }}
         >
-          未完了の目標
+          未達成の目標
         </h2>
         {incompleteGoals.length === 0 ? (
           <EmptyState message="まだ目標がありません" />
@@ -62,9 +62,9 @@ const HomePage = () => {
       </AppMain>
       <ConfirmDialog
         isOpen={isCompleteModalOpen}
-        title="目標を完了"
-        message="この目標を完了にしてもよろしいですか？"
-        confirmText="完了"
+        title="目標を達成"
+        message="この目標を達成済みにしてもよろしいですか？"
+        confirmText="目標達成🎉"
         confirmVariant="notice"
         onConfirm={handleCompleteConfirm}
         onCancel={() => setIsCompleteModalOpen(false)}

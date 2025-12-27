@@ -5,6 +5,8 @@ export const videoKeys = {
   allPosts: () => [...videoKeys.all, 'allPosts'] as const,
   postsByMonth: (yearMonth: string) =>
     [...videoKeys.all, 'postsByMonth', yearMonth] as const,
+  postsByDate: (date: string) =>
+    [...videoKeys.all, 'postsByDate', date] as const,
 };
 
 export const goalKeys = {

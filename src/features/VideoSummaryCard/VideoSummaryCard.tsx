@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Card } from '@/components/Card/Card';
+import { Card } from '@/components/Card';
 import styles from './VideoSummaryCard.module.scss';
 
 interface VideoSummaryCardProps {

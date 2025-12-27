@@ -1,21 +1,24 @@
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
-import { IoAdd, IoCalendar } from 'react-icons/io5';
+import { IoCalendar } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { AppMain } from '@/components/AppMain';
 import { CalendarModal } from '@/components/CalendarModal';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
-import { FloatingActionButton } from '@/components/FloatingActionButton';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
-import { PostModal, usePostModal } from '@/features/PostModal';
+import { PostCard } from '@/features/PostCard';
+import { InsightQuickAdd } from '@/features/InsightQuickAdd';
 import { VideoSummaryCard } from '@/features/VideoSummaryCard';
+import { useAddStandaloneInsightMutation } from '@/hooks/queries/useAddStandaloneInsightMutation';
 import { useAddVideoMutation } from '@/hooks/queries/useAddVideoMutation';
+import { usePostsByDateQuery } from '@/hooks/queries/useAllPostsQuery';
 import { useVideosQuery } from '@/hooks/queries/useVideosQuery';
 import { usePostHog } from '@/hooks/usePostHog';
 import { extractYouTubeVideoId } from '@/lib/youtube';
+import styles from './InsightsPage.module.scss';
 
 const InsightsPage = () => {
   const navigate = useNavigate();
@@ -26,7 +29,6 @@ const InsightsPage = () => {
     dayjs().format('YYYY-MM-DD'),
   );
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const { isOpen, open, close } = usePostModal();
 
   const {
     data: videoSummaries = [],
@@ -35,21 +37,33 @@ const InsightsPage = () => {
     refetch: refetchVideos,
   } = useVideosQuery(selectedDate);
 
+  const {
+    data: posts = [],
+    isLoading: isLoadingPosts,
+    error: postsError,
+    refetch: refetchPosts,
+  } = usePostsByDateQuery(selectedDate);
+
   const addVideoMutation = useAddVideoMutation();
+  const addInsightMutation = useAddStandaloneInsightMutation();
 
   const displayError = useMemo(() => {
-    if (videosError) return 'データの読み込みに失敗しました';
-    if (addVideoMutation.error) return '気付きの追加に失敗しました';
+    if (videosError || postsError) return 'データの読み込みに失敗しました';
+    if (addVideoMutation.error || addInsightMutation.error) return '気付きの追加に失敗しました';
     return null;
-  }, [videosError, addVideoMutation.error]);
+  }, [videosError, postsError, addVideoMutation.error, addInsightMutation.error]);
 
-  const isLoading = isLoadingVideos || addVideoMutation.isPending;
+  const isLoading = isLoadingVideos || isLoadingPosts || addVideoMutation.isPending || addInsightMutation.isPending;
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(dayjs(date).format('YYYY-MM-DD'));
   };
 
-  const handleSubmit = async (videoUrl: string) => {
+  const handleVideoClick = (videoInternalId: string) => {
+    navigate(`/insights/${videoInternalId}`);
+  };
+
+  const handleAddVideo = async (videoUrl: string) => {
     const youtubeVideoId = extractYouTubeVideoId(videoUrl);
     if (!youtubeVideoId) return;
 
@@ -60,7 +74,6 @@ const InsightsPage = () => {
         youtubeVideoId,
         date: selectedDate,
       });
-      close();
     } catch (err) {
       if (err instanceof Error) {
         reportError(err, {
@@ -72,10 +85,26 @@ const InsightsPage = () => {
     }
   };
 
+  const handleAddInsight = async (content: string) => {
+    try {
+      await addInsightMutation.mutateAsync({
+        date: selectedDate,
+        content,
+      });
+    } catch (err) {
+      if (err instanceof Error) {
+        reportError(err, {
+          context: 'createInsight',
+          date: selectedDate,
+        });
+      }
+    }
+  };
+
   return (
     <>
       <AppHeader
-        title={selectedDate}
+        title={dayjs(selectedDate).format('YYYY年M月D日')}
         actionButton={
           <IconButton
             icon={<IoCalendar />}
@@ -90,38 +119,67 @@ const InsightsPage = () => {
           <ErrorState
             message={displayError}
             onRetry={() => {
-              if (videosError) {
-                refetchVideos();
-              }
+              if (videosError) refetchVideos();
+              if (postsError) refetchPosts();
             }}
           />
         )}
-        {!isLoading && !displayError && videoSummaries.length === 0 && (
-          <EmptyState message="まだ気付きがありません" />
+
+        {!isLoading && !displayError && (
+          <>
+            {/* 動画セクション */}
+            {videoSummaries.length > 0 && (
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>動画</h2>
+                {videoSummaries.map((video) => (
+                  <VideoSummaryCard
+                    key={video.id}
+                    youtubeVideoId={video.youtubeVideoId}
+                    title={video.title}
+                    onClick={() => navigate(`/insights/${video.id}`)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* 気付き投稿セクション */}
+            {posts.length > 0 && (
+              <div className={styles.section}>
+                <h2 className={styles.sectionTitle}>気付き</h2>
+                {posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    postId={post.id}
+                    postContent={post.content}
+                    postCreatedAt={post.createdAt}
+                    videoTitle={post.videoTitle}
+                    onVideoClick={
+                      post.videoInternalId
+                        ? () => handleVideoClick(post.videoInternalId!)
+                        : undefined
+                    }
+                  />
+                ))}
+              </div>
+            )}
+
+            {videoSummaries.length === 0 && posts.length === 0 && (
+              <EmptyState message="まだ気付きがありません" />
+            )}
+          </>
         )}
-        {!isLoading &&
-          !displayError &&
-          videoSummaries.length > 0 &&
-          videoSummaries.map((video) => (
-            <VideoSummaryCard
-              key={video.id}
-              youtubeVideoId={video.youtubeVideoId}
-              title={video.title}
-              onClick={() => navigate(`/insights/${video.id}`)}
-            />
-          ))}
       </AppMain>
+
       <CalendarModal
         isOpen={isCalendarOpen}
         onClose={() => setIsCalendarOpen(false)}
         onDateSelect={handleDateSelect}
         selectedDate={dayjs(selectedDate).toDate()}
       />
-      <PostModal isOpen={isOpen} onClose={close} onSubmit={handleSubmit} />
-      <FloatingActionButton
-        icon={<IoAdd />}
-        onClick={open}
-        ariaLabel="気付きを追加"
+
+      <InsightQuickAdd
+        onAddVideo={handleAddVideo}
+        onAddInsight={handleAddInsight}
       />
     </>
   );

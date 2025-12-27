@@ -292,6 +292,7 @@ export const deleteVideo = async (videoId: string): Promise<void> => {
 
 /**
  * 指定月の投稿を動画情報と一緒に取得（新しい順）
+ * 動画と紐づく投稿と紐づかない投稿の両方を取得
  */
 export const getPostsByMonth = async (
   yearMonth: string,
@@ -300,7 +301,9 @@ export const getPostsByMonth = async (
     return await retryWithBackoff(async () => {
       const db = getDB();
 
-      // 投稿と動画情報をJOINして、指定月の投稿のみ取得
+      // 投稿と動画情報をLEFT JOINして、指定月の投稿を全て取得
+      // 動画と紐づく投稿: videos.date LIKE
+      // 動画と紐づかない投稿: insights.date LIKE
       const result = await db.query(
         `SELECT
           insights.id,
@@ -311,33 +314,117 @@ export const getPostsByMonth = async (
           videos.title as videoTitle,
           videos.date as videoDate
         FROM insights
-        INNER JOIN videos ON insights.videoId = videos.id
-        WHERE videos.date LIKE ?
+        LEFT JOIN videos ON insights.videoId = videos.id
+        WHERE (videos.date LIKE ? OR (insights.videoId IS NULL AND insights.date LIKE ?))
         ORDER BY insights.createdAt DESC`,
-        [`${yearMonth}%`],
+        [`${yearMonth}%`, `${yearMonth}%`],
       );
 
       const insights = (result.values || []) as Array<{
         id: string;
         content: string;
         createdAt: number;
-        videoInternalId: string;
-        videoId: string;
-        videoTitle: string;
-        videoDate: string;
+        videoInternalId: string | null;
+        videoId: string | null;
+        videoTitle: string | null;
+        videoDate: string | null;
       }>;
 
       return insights.map((insight) => ({
         id: insight.id,
         content: insight.content,
         createdAt: insight.createdAt,
-        videoInternalId: insight.videoInternalId,
-        youtubeVideoId: insight.videoId,
-        videoTitle: insight.videoTitle,
-        videoDate: insight.videoDate,
+        videoInternalId: insight.videoInternalId ?? undefined,
+        youtubeVideoId: insight.videoId ?? undefined,
+        videoTitle: insight.videoTitle ?? undefined,
+        videoDate: insight.videoDate ?? undefined,
       }));
     });
   } catch (_error) {
     throw new RetryableError('Failed to get posts by month');
+  }
+};
+
+/**
+ * 指定日の投稿を動画情報と一緒に取得（新しい順）
+ * 動画と紐づく投稿と紐づかない投稿の両方を取得
+ */
+export const getPostsByDate = async (
+  date: string,
+): Promise<PostDetail[]> => {
+  try {
+    return await retryWithBackoff(async () => {
+      const db = getDB();
+
+      // 投稿と動画情報をLEFT JOINして、指定日の投稿を全て取得
+      // 動画と紐づく投稿: videos.date =
+      // 動画と紐づかない投稿: insights.date =
+      const result = await db.query(
+        `SELECT
+          insights.id,
+          insights.content,
+          insights.createdAt,
+          videos.id as videoInternalId,
+          videos.videoId,
+          videos.title as videoTitle,
+          videos.date as videoDate
+        FROM insights
+        LEFT JOIN videos ON insights.videoId = videos.id
+        WHERE (videos.date = ? OR (insights.videoId IS NULL AND insights.date = ?))
+        ORDER BY insights.createdAt DESC`,
+        [date, date],
+      );
+
+      const insights = (result.values || []) as Array<{
+        id: string;
+        content: string;
+        createdAt: number;
+        videoInternalId: string | null;
+        videoId: string | null;
+        videoTitle: string | null;
+        videoDate: string | null;
+      }>;
+
+      return insights.map((insight) => ({
+        id: insight.id,
+        content: insight.content,
+        createdAt: insight.createdAt,
+        videoInternalId: insight.videoInternalId ?? undefined,
+        youtubeVideoId: insight.videoId ?? undefined,
+        videoTitle: insight.videoTitle ?? undefined,
+        videoDate: insight.videoDate ?? undefined,
+      }));
+    });
+  } catch (_error) {
+    throw new RetryableError('Failed to get posts by date');
+  }
+};
+
+/**
+ * 日付で単体の投稿を取得（動画と紐づかない投稿のみ）
+ */
+export const getStandaloneInsightsByDate = async (
+  date: string,
+): Promise<Array<{ id: string; content: string; createdAt: number; updatedAt: number }>> => {
+  try {
+    return await retryWithBackoff(async () => {
+      const db = getDB();
+
+      const result = await db.query(
+        'SELECT id, content, createdAt, updatedAt FROM insights WHERE videoId IS NULL AND date = ? ORDER BY createdAt DESC',
+        [date],
+      );
+
+      const insights = (result.values || []) as InsightDTO[];
+
+      return insights.map((insight) => ({
+        id: insight.id,
+        content: insight.content,
+        createdAt: insight.createdAt,
+        updatedAt: insight.updatedAt,
+      }));
+    });
+  } catch (_error) {
+    throw new RetryableError('Failed to get standalone insights by date');
   }
 };

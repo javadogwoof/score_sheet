@@ -92,23 +92,23 @@ const GoalsPage = () => {
   const getEmptyMessage = () => {
     switch (activeTab) {
       case 'incomplete':
-        return '未完了の目標がありません';
+        return '未達成の目標がありません';
       case 'completed':
-        return '完了した目標がありません';
+        return '達成した目標がありません';
       case 'withdrawn':
         return '取り下げた目標がありません';
     }
   };
 
   const tabs = [
-    { value: 'incomplete' as const, label: '未完了' },
-    { value: 'completed' as const, label: '完了済み' },
+    { value: 'incomplete' as const, label: '未達成' },
+    { value: 'completed' as const, label: '達成済み' },
     { value: 'withdrawn' as const, label: '取り下げ' },
   ];
 
   return (
     <>
-      <AppHeader title="目標設定" />
+      <AppHeader title="目標管理" />
       <AppMain>
         <TabNavigation
           tabs={tabs}
@@ -137,9 +137,9 @@ const GoalsPage = () => {
       </AppMain>
       <ConfirmDialog
         isOpen={isCompleteModalOpen}
-        title="目標を完了"
-        message="この目標を完了にしてもよろしいですか？"
-        confirmText="完了"
+        title="目標を達成"
+        message="この目標を達成済みにしてもよろしいですか？"
+        confirmText="目標達成🎉"
         confirmVariant="notice"
         onConfirm={handleCompleteConfirm}
         onCancel={() => setIsCompleteModalOpen(false)}
@@ -154,8 +154,8 @@ const GoalsPage = () => {
       />
       <ConfirmDialog
         isOpen={isRestoreModalOpen}
-        title="目標を未完了に戻す"
-        message="この目標を未完了に戻してもよろしいですか？"
+        title="目標を未達成に戻す"
+        message="この目標を未達成に戻してもよろしいですか？"
         confirmText="戻す"
         confirmVariant="notice"
         onConfirm={handleRestoreConfirm}

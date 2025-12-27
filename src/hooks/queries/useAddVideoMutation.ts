@@ -33,8 +33,10 @@ export const useAddVideoMutation = () => {
       return { videoId, youtubeVideoId, date };
     },
     onSuccess: ({ date }) => {
-      // キャッシュを無効化して再取得（シンプルな方法）
+      // 該当日付の動画キャッシュを無効化
       queryClient.invalidateQueries({ queryKey: videoKeys.byDate(date) });
+      // 該当日付の投稿キャッシュを無効化
+      queryClient.invalidateQueries({ queryKey: videoKeys.postsByDate(date) });
       // 全ての月のpostsByMonthキャッシュを無効化
       queryClient.invalidateQueries({
         queryKey: videoKeys.all,
