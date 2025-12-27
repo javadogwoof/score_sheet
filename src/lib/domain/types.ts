@@ -8,7 +8,8 @@ export interface PostDetail {
   id: string;
   content: string;
   createdAt: number;
-  videoId: string;
+  videoInternalId: string; // DB内の動画ID（VideoPageへの遷移用）
+  videoId: string; // YouTubeのvideoId
   videoTitle: string;
   videoDate: string;
 }

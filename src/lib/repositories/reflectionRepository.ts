@@ -276,6 +276,7 @@ export const getPostsByMonth = async (
           posts.id,
           posts.contents,
           posts.createdAt,
+          videos.id as videoInternalId,
           videos.videoId,
           videos.title as videoTitle,
           videos.date as videoDate
@@ -290,6 +291,7 @@ export const getPostsByMonth = async (
         id: string;
         contents: string;
         createdAt: number;
+        videoInternalId: string;
         videoId: string;
         videoTitle: string;
         videoDate: string;
@@ -299,6 +301,7 @@ export const getPostsByMonth = async (
         id: post.id,
         content: post.contents,
         createdAt: post.createdAt,
+        videoInternalId: post.videoInternalId,
         videoId: post.videoId,
         videoTitle: post.videoTitle,
         videoDate: post.videoDate,

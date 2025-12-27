@@ -28,8 +28,8 @@ const AnalysisPage = () => {
     refetch,
   } = usePostsByMonthQuery(selectedMonth);
 
-  const handleVideoClick = (videoId: string) => {
-    navigate(`/videos/${videoId}`);
+  const handleVideoClick = (videoInternalId: string) => {
+    navigate(`/videos/${videoInternalId}`);
   };
 
   const handleMonthSelect = (date: Date) => {
@@ -70,7 +70,7 @@ const AnalysisPage = () => {
               postCreatedAt={post.createdAt}
               videoTitle={post.videoTitle}
               videoDate={post.videoDate}
-              onVideoClick={() => handleVideoClick(post.videoId)}
+              onVideoClick={() => handleVideoClick(post.videoInternalId)}
             />
           ))}
       </AppMain>
