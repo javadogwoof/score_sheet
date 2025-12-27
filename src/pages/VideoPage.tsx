@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { IoEllipsisVertical } from 'react-icons/io5';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { AppMain } from '@/components/AppMain';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
+import { DropdownMenu, type MenuItem } from '@/components/DropdownMenu';
 import { ErrorState } from '@/components/ErrorState';
-import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { VideoCard } from '@/features/VideoCard';
 import { useDeleteVideoMutation } from '@/hooks/queries/useDeleteVideoMutation';
 import { useUpdateVideoTitleMutation } from '@/hooks/queries/useUpdateVideoTitleMutation';
 import { useVideoQuery } from '@/hooks/queries/useVideoQuery';
-import styles from './VideoPage.module.scss';
 
 const VideoPage = () => {
   const { videoId } = useParams<{ videoId: string }>();
@@ -26,7 +24,6 @@ const VideoPage = () => {
 
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
-  const [showMenu, setShowMenu] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const updateTitleMutation = useUpdateVideoTitleMutation(videoId || '');
@@ -48,7 +45,6 @@ const VideoPage = () => {
     video && video.title !== '' ? video.title : video?.videoId || '';
 
   const handleEditTitle = () => {
-    setShowMenu(false);
     setEditedTitle(displayTitle);
     setIsEditingTitle(true);
   };
@@ -71,7 +67,6 @@ const VideoPage = () => {
   };
 
   const handleDeleteVideo = () => {
-    setShowMenu(false);
     setShowDeleteConfirm(true);
   };
 
@@ -90,31 +85,25 @@ const VideoPage = () => {
     }
   };
 
+  // メニュー項目を定義
+  const menuItems: MenuItem[] = [
+    {
+      label: 'タイトルを編集',
+      onClick: handleEditTitle,
+    },
+    {
+      label: '動画を削除',
+      onClick: handleDeleteVideo,
+    },
+  ];
+
   return (
     <>
       <AppHeader
         subtitle={displayTitle}
         showBackButton
         actionButton={
-          !isEditingTitle ? (
-            <div style={{ position: 'relative' }}>
-              <IconButton
-                icon={<IoEllipsisVertical />}
-                onClick={() => setShowMenu(!showMenu)}
-                ariaLabel="メニュー"
-              />
-              {showMenu && (
-                <div className={styles.menu}>
-                  <button type="button" onClick={handleEditTitle}>
-                    タイトルを編集
-                  </button>
-                  <button type="button" onClick={handleDeleteVideo}>
-                    動画を削除
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : undefined
+          !isEditingTitle ? <DropdownMenu items={menuItems} /> : undefined
         }
       />
       <AppMain>
