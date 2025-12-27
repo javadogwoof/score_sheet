@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
+import { GoalSection } from '@/features/GoalSection';
 import { PostCard } from '@/features/PostCard';
 import { usePostsByMonthQuery } from '@/hooks/queries/useAllPostsQuery';
 
@@ -49,6 +50,8 @@ const AnalysisPage = () => {
         }
       />
       <AppMain>
+        <GoalSection />
+
         {isLoading && <LoadingState />}
         {error && (
           <ErrorState

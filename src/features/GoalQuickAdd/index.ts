@@ -1,0 +1,1 @@
+export { GoalQuickAdd } from './GoalQuickAdd';

@@ -3,6 +3,21 @@ export interface Post {
   content: string;
 }
 
+// 目標の優先度
+export type GoalPriority = 'high' | 'medium' | 'low';
+
+// 目標
+export interface Goal {
+  id: string;
+  title: string;
+  description?: string;
+  priority: GoalPriority;
+  deadline: string; // YYYY-MM-DD形式
+  completed: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
 // 自己分析ページで扱う投稿の詳細情報
 export interface PostDetail {
   id: string;
