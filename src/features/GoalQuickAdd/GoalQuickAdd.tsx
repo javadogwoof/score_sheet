@@ -75,6 +75,7 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
           aria-label="目標を追加"
         >
           <IoAdd className={styles.icon} />
+          <span className={styles.buttonLabel}>目標</span>
         </button>
       </div>
     );

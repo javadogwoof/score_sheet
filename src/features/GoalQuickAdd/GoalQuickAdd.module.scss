@@ -6,18 +6,19 @@
 }
 
 .addButton {
-  width: 56px;
   height: 56px;
-  padding: 0;
+  padding: 0 20px;
   background-color: #007bff;
   border: none;
-  border-radius: 50%;
+  border-radius: 28px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   color: white;
-  font-size: 24px;
+  font-size: 16px;
+  font-weight: 600;
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
   transition: all 0.2s;
 
@@ -34,7 +35,13 @@
 }
 
 .icon {
-  font-size: 28px;
+  font-size: 24px;
+  color: white;
+}
+
+.buttonLabel {
+  white-space: nowrap;
+  color: white;
 }
 
 .card {

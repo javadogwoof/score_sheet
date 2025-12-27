@@ -53,3 +53,95 @@
   background-color: #e8f4f8;
   color: #0066cc;
 }
+
+// Detailed variant styles
+.detailedList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detailedCard {
+  padding: 16px;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+.description {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #999;
+}
+
+.deadline {
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.completeButton,
+.deleteButton {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.completeButton {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+
+  &:hover {
+    background-color: #c8e6c9;
+  }
+
+  &:active {
+    background-color: #a5d6a7;
+  }
+}
+
+.deleteButton {
+  background-color: #ffebee;
+  color: #c62828;
+
+  &:hover {
+    background-color: #ffcdd2;
+  }
+
+  &:active {
+    background-color: #ef9a9a;
+  }
+}
