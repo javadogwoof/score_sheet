@@ -126,10 +126,16 @@ export const updateGoal = async (
   // 更新データをマージ
   const updated = {
     title: data.title ?? existing.title,
-    description: data.description !== undefined ? data.description : existing.description,
+    description:
+      data.description !== undefined ? data.description : existing.description,
     priority: data.priority ?? existing.priority,
     deadline: data.deadline ?? existing.deadline,
-    completed: data.completed !== undefined ? (data.completed ? 1 : 0) : existing.completed,
+    completed:
+      data.completed !== undefined
+        ? data.completed
+          ? 1
+          : 0
+        : existing.completed,
     updatedAt: Date.now(),
   };
 

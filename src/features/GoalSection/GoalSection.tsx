@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { GoalList } from '@/features/GoalList';
 import { GoalQuickAdd } from '@/features/GoalQuickAdd';
-import type { GoalPriority } from '@/lib/domain/types';
 import { useAddGoalMutation } from '@/hooks/queries/useAddGoalMutation';
 import { useGoalsQuery } from '@/hooks/queries/useGoalsQuery';
+import type { GoalPriority } from '@/lib/domain/types';
 import styles from './GoalSection.module.scss';
 
 export const GoalSection = () => {
