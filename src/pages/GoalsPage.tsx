@@ -6,10 +6,10 @@ import { EmptyState } from '@/components/EmptyState';
 import { TabNavigation } from '@/components/TabNavigation';
 import { GoalList } from '@/features/GoalList';
 import { GoalQuickAdd } from '@/features/GoalQuickAdd';
-import type { GoalPriority } from '@/lib/domain/types';
 import { useAddGoalMutation } from '@/hooks/queries/useAddGoalMutation';
 import { useGoalsQuery } from '@/hooks/queries/useGoalsQuery';
 import { useUpdateGoalMutation } from '@/hooks/queries/useUpdateGoalMutation';
+import type { GoalPriority } from '@/lib/domain/types';
 
 type Tab = 'incomplete' | 'completed' | 'withdrawn';
 
@@ -110,7 +110,11 @@ const GoalsPage = () => {
     <>
       <AppHeader title="目標設定" />
       <AppMain>
-        <TabNavigation tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        <TabNavigation
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+        />
 
         {filteredGoals.length === 0 ? (
           <EmptyState message={getEmptyMessage()} />
@@ -118,9 +122,15 @@ const GoalsPage = () => {
           <GoalList
             goals={filteredGoals}
             variant="detailed"
-            onComplete={activeTab === 'incomplete' ? handleCompleteClick : undefined}
-            onDelete={activeTab === 'incomplete' ? handleWithdrawClick : undefined}
-            onRestore={activeTab !== 'incomplete' ? handleRestoreClick : undefined}
+            onComplete={
+              activeTab === 'incomplete' ? handleCompleteClick : undefined
+            }
+            onDelete={
+              activeTab === 'incomplete' ? handleWithdrawClick : undefined
+            }
+            onRestore={
+              activeTab !== 'incomplete' ? handleRestoreClick : undefined
+            }
           />
         )}
         {activeTab === 'incomplete' && <GoalQuickAdd onAdd={handleAddGoal} />}

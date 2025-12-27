@@ -40,7 +40,14 @@ const HomePage = () => {
     <>
       <AppHeader title="ホーム" />
       <AppMain>
-        <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#333' }}>
+        <h2
+          style={{
+            margin: 0,
+            fontSize: '16px',
+            fontWeight: 600,
+            color: '#333',
+          }}
+        >
           未完了の目標
         </h2>
         {incompleteGoals.length === 0 ? (
