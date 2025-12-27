@@ -17,7 +17,9 @@ export const useDeletePostMutation = (videoId: string) => {
       // 動画の日付を取得してpostsByDateキャッシュを無効化
       const video = queryClient.getQueryData<Video>(videoKeys.byId(videoId));
       if (video?.date) {
-        queryClient.invalidateQueries({ queryKey: videoKeys.postsByDate(video.date) });
+        queryClient.invalidateQueries({
+          queryKey: videoKeys.postsByDate(video.date),
+        });
       }
 
       // 全ての月のpostsByMonthキャッシュを無効化

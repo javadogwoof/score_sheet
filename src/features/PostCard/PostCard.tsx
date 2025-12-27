@@ -13,12 +13,7 @@ interface PostCardProps {
 }
 
 export const PostCard = memo(
-  ({
-    postContent,
-    postCreatedAt,
-    videoTitle,
-    onVideoClick,
-  }: PostCardProps) => {
+  ({ postContent, postCreatedAt, videoTitle, onVideoClick }: PostCardProps) => {
     const formattedDate = dayjs(postCreatedAt).format('YYYY-MM-DD HH:mm');
 
     return (

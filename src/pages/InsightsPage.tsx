@@ -9,8 +9,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
 import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
-import { PostCard } from '@/features/PostCard';
 import { InsightQuickAdd } from '@/features/InsightQuickAdd';
+import { PostCard } from '@/features/PostCard';
 import { VideoSummaryCard } from '@/features/VideoSummaryCard';
 import { useAddStandaloneInsightMutation } from '@/hooks/queries/useAddStandaloneInsightMutation';
 import { useAddVideoMutation } from '@/hooks/queries/useAddVideoMutation';
@@ -49,11 +49,21 @@ const InsightsPage = () => {
 
   const displayError = useMemo(() => {
     if (videosError || postsError) return 'データの読み込みに失敗しました';
-    if (addVideoMutation.error || addInsightMutation.error) return '気付きの追加に失敗しました';
+    if (addVideoMutation.error || addInsightMutation.error)
+      return '気付きの追加に失敗しました';
     return null;
-  }, [videosError, postsError, addVideoMutation.error, addInsightMutation.error]);
+  }, [
+    videosError,
+    postsError,
+    addVideoMutation.error,
+    addInsightMutation.error,
+  ]);
 
-  const isLoading = isLoadingVideos || isLoadingPosts || addVideoMutation.isPending || addInsightMutation.isPending;
+  const isLoading =
+    isLoadingVideos ||
+    isLoadingPosts ||
+    addVideoMutation.isPending ||
+    addInsightMutation.isPending;
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(dayjs(date).format('YYYY-MM-DD'));

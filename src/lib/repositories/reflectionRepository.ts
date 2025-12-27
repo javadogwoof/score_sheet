@@ -349,9 +349,7 @@ export const getPostsByMonth = async (
  * 指定日の投稿を動画情報と一緒に取得（新しい順）
  * 動画と紐づく投稿と紐づかない投稿の両方を取得
  */
-export const getPostsByDate = async (
-  date: string,
-): Promise<PostDetail[]> => {
+export const getPostsByDate = async (date: string): Promise<PostDetail[]> => {
   try {
     return await retryWithBackoff(async () => {
       const db = getDB();
@@ -405,7 +403,9 @@ export const getPostsByDate = async (
  */
 export const getStandaloneInsightsByDate = async (
   date: string,
-): Promise<Array<{ id: string; content: string; createdAt: number; updatedAt: number }>> => {
+): Promise<
+  Array<{ id: string; content: string; createdAt: number; updatedAt: number }>
+> => {
   try {
     return await retryWithBackoff(async () => {
       const db = getDB();

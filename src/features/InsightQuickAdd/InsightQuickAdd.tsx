@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { IoAdd, IoPlay, IoText } from 'react-icons/io5';
 import { Card } from '@/components/Card';
 import { PostModal, usePostModal } from '@/features/PostModal';
@@ -17,7 +17,11 @@ export const InsightQuickAdd = ({
 }: InsightQuickAddProps) => {
   const [mode, setMode] = useState<Mode>('collapsed');
   const [insightContent, setInsightContent] = useState('');
-  const { isOpen: isVideoModalOpen, open: openVideoModal, close: closeVideoModal } = usePostModal();
+  const {
+    isOpen: isVideoModalOpen,
+    open: openVideoModal,
+    close: closeVideoModal,
+  } = usePostModal();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // 外側タップでメニューを閉じる
@@ -119,7 +123,6 @@ export const InsightQuickAdd = ({
               value={insightContent}
               onChange={(e) => setInsightContent(e.target.value)}
               rows={6}
-              autoFocus
             />
             <div className={styles.actions}>
               <button
