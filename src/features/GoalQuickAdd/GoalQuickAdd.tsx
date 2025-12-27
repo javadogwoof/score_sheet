@@ -80,7 +80,6 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
           onChange={(e) => setTitle(e.target.value)}
           placeholder="目標タイトルを入力..."
           className={styles.titleInput}
-          autoFocus
           onKeyDown={(e) => {
             if (e.key === 'Enter' && title.trim()) {
               handleConfirmTitle();

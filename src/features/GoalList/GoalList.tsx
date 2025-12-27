@@ -40,7 +40,9 @@ export const GoalList = ({ goals }: GoalListProps) => {
         <Card key={goal.id} className={styles.goalCard}>
           <div className={styles.header}>
             <h3 className={styles.title}>{goal.title}</h3>
-            <span className={`${styles.priority} ${getPriorityClass(goal.priority)}`}>
+            <span
+              className={`${styles.priority} ${getPriorityClass(goal.priority)}`}
+            >
               {getPriorityLabel(goal.priority)}
             </span>
           </div>
