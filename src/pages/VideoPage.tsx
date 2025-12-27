@@ -53,10 +53,6 @@ const VideoPage = () => {
     setIsEditingTitle(false);
   };
 
-  const handleCancelEdit = () => {
-    setIsEditingTitle(false);
-  };
-
   const handleDeleteVideo = () => {
     setShowDeleteConfirm(true);
   };
@@ -99,11 +95,7 @@ const VideoPage = () => {
       />
       <AppMain>
         {isEditingTitle && (
-          <InlineEdit
-            initialValue={displayTitle}
-            onSave={handleSaveTitle}
-            onCancel={handleCancelEdit}
-          />
+          <InlineEdit initialValue={displayTitle} onSave={handleSaveTitle} />
         )}
         {isLoading && <LoadingState />}
         {error && (
