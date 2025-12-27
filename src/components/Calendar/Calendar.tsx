@@ -15,6 +15,7 @@ export const Calendar = ({
   onDateSelect,
   value,
   onActiveStartDateChange,
+  view = 'month',
 }: CalendarProps) => {
   const handleChange = (newValue: Value) => {
     if (newValue instanceof Date) {
@@ -36,10 +37,13 @@ export const Calendar = ({
     <ReactCalendar
       className={styles.container}
       locale={'ja-JP'}
-      onClickDay={handleChange}
+      onClickDay={view === 'month' ? handleChange : undefined}
+      onClickMonth={view === 'year' ? handleChange : undefined}
       formatDay={(_locale, day) => day.getDate().toString()}
       value={value}
       onActiveStartDateChange={handleActiveStartDateChange}
+      view={view}
+      maxDetail={view === 'year' ? 'year' : 'month'}
     />
   );
 };

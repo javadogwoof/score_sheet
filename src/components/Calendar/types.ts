@@ -28,4 +28,9 @@ export interface CalendarProps {
    * カレンダーの表示月が変更されたときのコールバック
    */
   onActiveStartDateChange?: (date: Date) => void;
+
+  /**
+   * 表示モード（月: 日付選択、年: 月選択、10年: 年選択）
+   */
+  view?: 'month' | 'year' | 'decade';
 }

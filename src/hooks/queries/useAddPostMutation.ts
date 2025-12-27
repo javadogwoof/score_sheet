@@ -51,7 +51,11 @@ export const useAddPostMutation = (videoId: string) => {
     // 成功時: DBから正しいデータを再取得
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: videoKeys.byId(videoId) });
-      queryClient.invalidateQueries({ queryKey: videoKeys.allPosts() });
+      // 全ての月のpostsByMonthキャッシュを無効化
+      queryClient.invalidateQueries({
+        queryKey: videoKeys.all,
+        predicate: (query) => query.queryKey[1] === 'postsByMonth',
+      });
     },
 
     // エラー時: ロールバック

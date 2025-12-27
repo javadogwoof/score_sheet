@@ -261,14 +261,16 @@ export const deleteVideo = async (videoId: string): Promise<void> => {
 };
 
 /**
- * 全投稿を動画情報と一緒に取得（新しい順）
+ * 指定月の投稿を動画情報と一緒に取得（新しい順）
  */
-export const getAllPosts = async (): Promise<PostDetail[]> => {
+export const getPostsByMonth = async (
+  yearMonth: string,
+): Promise<PostDetail[]> => {
   try {
     return await retryWithBackoff(async () => {
       const db = getDB();
 
-      // 投稿と動画情報をJOINして取得
+      // 投稿と動画情報をJOINして、指定月の投稿のみ取得
       const result = await db.query(
         `SELECT
           posts.id,
@@ -279,8 +281,9 @@ export const getAllPosts = async (): Promise<PostDetail[]> => {
           videos.date as videoDate
         FROM posts
         INNER JOIN videos ON posts.videoId = videos.id
+        WHERE videos.date LIKE ?
         ORDER BY posts.createdAt DESC`,
-        [],
+        [`${yearMonth}%`],
       );
 
       const posts = (result.values || []) as Array<{
@@ -302,6 +305,6 @@ export const getAllPosts = async (): Promise<PostDetail[]> => {
       }));
     });
   } catch (_error) {
-    throw new RetryableError('Failed to get all posts');
+    throw new RetryableError('Failed to get posts by month');
   }
 };

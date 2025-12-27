@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAllPosts } from '@/lib/repositories/reflectionRepository';
+import { getPostsByMonth } from '@/lib/repositories/reflectionRepository';
 import { videoKeys } from './keys';
 
-export const useAllPostsQuery = () => {
+export const usePostsByMonthQuery = (yearMonth: string) => {
   return useQuery({
-    queryKey: videoKeys.allPosts(),
-    queryFn: getAllPosts,
+    queryKey: videoKeys.postsByMonth(yearMonth),
+    queryFn: () => getPostsByMonth(yearMonth),
   });
 };

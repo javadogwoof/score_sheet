@@ -1,29 +1,53 @@
+import dayjs from 'dayjs';
+import { useState } from 'react';
+import { IoCalendar } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import { AppHeader } from '@/components/AppHeader';
 import { AppMain } from '@/components/AppMain';
+import { CalendarModal } from '@/components/CalendarModal';
 import { EmptyState } from '@/components/EmptyState';
 import { ErrorState } from '@/components/ErrorState';
+import { IconButton } from '@/components/IconButton';
 import { LoadingState } from '@/components/LoadingState';
 import { PostCard } from '@/features/PostCard';
-import { useAllPostsQuery } from '@/hooks/queries/useAllPostsQuery';
+import { usePostsByMonthQuery } from '@/hooks/queries/useAllPostsQuery';
 
 const AnalysisPage = () => {
   const navigate = useNavigate();
+
+  // 今月をデフォルトとして使用
+  const [selectedMonth, setSelectedMonth] = useState(() =>
+    dayjs().format('YYYY-MM'),
+  );
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const {
     data: posts = [],
     isLoading,
     error,
     refetch,
-  } = useAllPostsQuery();
+  } = usePostsByMonthQuery(selectedMonth);
 
   const handleVideoClick = (videoId: string) => {
     navigate(`/videos/${videoId}`);
   };
 
+  const handleMonthSelect = (date: Date) => {
+    setSelectedMonth(dayjs(date).format('YYYY-MM'));
+  };
+
   return (
     <>
-      <AppHeader title="自己分析" />
+      <AppHeader
+        title={dayjs(selectedMonth).format('YYYY年M月')}
+        actionButton={
+          <IconButton
+            icon={<IoCalendar />}
+            onClick={() => setIsCalendarOpen(true)}
+            ariaLabel="月を選択"
+          />
+        }
+      />
       <AppMain>
         {isLoading && <LoadingState />}
         {error && (
@@ -50,6 +74,13 @@ const AnalysisPage = () => {
             />
           ))}
       </AppMain>
+      <CalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        onDateSelect={handleMonthSelect}
+        selectedDate={dayjs(selectedMonth).toDate()}
+        view="year"
+      />
     </>
   );
 };

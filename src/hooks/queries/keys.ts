@@ -3,4 +3,6 @@ export const videoKeys = {
   byDate: (date: string) => [...videoKeys.all, 'byDate', date] as const,
   byId: (videoId: string) => [...videoKeys.all, 'byId', videoId] as const,
   allPosts: () => [...videoKeys.all, 'allPosts'] as const,
+  postsByMonth: (yearMonth: string) =>
+    [...videoKeys.all, 'postsByMonth', yearMonth] as const,
 };
