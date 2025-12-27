@@ -12,7 +12,7 @@ export const GoalSection = () => {
 
   // 未完了の目標のみを表示
   const incompleteGoals = useMemo(
-    () => goals.filter((goal) => !goal.completed),
+    () => goals.filter((goal) => goal.status === 'incomplete'),
     [goals],
   );
 

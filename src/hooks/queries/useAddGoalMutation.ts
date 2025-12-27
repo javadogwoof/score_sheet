@@ -31,7 +31,7 @@ export const useAddGoalMutation = () => {
       const optimisticGoal: Goal = {
         id: crypto.randomUUID(),
         ...newGoalData,
-        completed: false,
+        status: 'incomplete',
         createdAt: Date.now(),
         updatedAt: Date.now(),
       };

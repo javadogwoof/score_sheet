@@ -1,3 +1,9 @@
+:root {
+  --header-height: 72px;
+  --footer-height: 64px;
+  --footer-spacing: 16px;
+}
+
 *,
 *::before,
 *::after {

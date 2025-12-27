@@ -32,11 +32,15 @@
 }
 
 .priority {
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .priorityHigh {
@@ -63,12 +67,23 @@
 
 .detailedCard {
   padding: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .cardHeader {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: flex-start;
+  align-items: center;
   gap: 12px;
   margin-bottom: 8px;
 }
@@ -107,7 +122,8 @@
 }
 
 .completeButton,
-.deleteButton {
+.deleteButton,
+.restoreButton {
   width: 32px;
   height: 32px;
   border: none;
@@ -143,5 +159,18 @@
 
   &:active {
     background-color: #ef9a9a;
+  }
+}
+
+.restoreButton {
+  background-color: #e3f2fd;
+  color: #1565c0;
+
+  &:hover {
+    background-color: #bbdefb;
+  }
+
+  &:active {
+    background-color: #90caf9;
   }
 }

@@ -6,6 +6,9 @@ export interface Post {
 // 目標の優先度
 export type GoalPriority = 'high' | 'medium' | 'low';
 
+// 目標のステータス
+export type GoalStatus = 'incomplete' | 'completed' | 'withdrawn';
+
 // 目標
 export interface Goal {
   id: string;
@@ -13,7 +16,7 @@ export interface Goal {
   description?: string;
   priority: GoalPriority;
   deadline: string; // YYYY-MM-DD形式
-  completed: boolean;
+  status: GoalStatus;
   createdAt: number;
   updatedAt: number;
 }

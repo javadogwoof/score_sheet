@@ -30,14 +30,14 @@ export const runMigration = async (): Promise<void> => {
       description TEXT,
       priority TEXT NOT NULL,
       deadline TEXT NOT NULL,
-      completed INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'incomplete',
       createdAt INTEGER NOT NULL,
       updatedAt INTEGER NOT NULL
     );
 
     CREATE INDEX IF NOT EXISTS idx_videos_date ON videos(date);
     CREATE INDEX IF NOT EXISTS idx_posts_videoId ON posts(videoId);
-    CREATE INDEX IF NOT EXISTS idx_goals_completed ON goals(completed);
+    CREATE INDEX IF NOT EXISTS idx_goals_status ON goals(status);
     CREATE INDEX IF NOT EXISTS idx_goals_deadline ON goals(deadline);
   `;
 

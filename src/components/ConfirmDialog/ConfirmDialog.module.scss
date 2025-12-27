@@ -43,8 +43,27 @@
 }
 
 .confirmButton {
-  background-color: #d32f2f;
   color: white;
+}
+
+.notice {
+  background-color: #0288d1;
+
+  &:hover {
+    background-color: #01579b;
+  }
+}
+
+.warning {
+  background-color: #f57c00;
+
+  &:hover {
+    background-color: #e65100;
+  }
+}
+
+.alert {
+  background-color: #d32f2f;
 
   &:hover {
     background-color: #b71c1c;

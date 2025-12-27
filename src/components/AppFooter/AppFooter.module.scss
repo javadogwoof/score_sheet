@@ -1,17 +1,13 @@
 .footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   background: white;
   border-top: 1px solid #e0e0e0;
-  z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .tabs {
   display: flex;
-  height: 64px;
+  height: var(--footer-height);
 }
 
 .tab {

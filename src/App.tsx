@@ -4,6 +4,8 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Layout } from '@/components/Layout';
 import AnalysisPage from '@/pages/AnalysisPage';
 import DailyPage from '@/pages/DailyPage';
+import GoalDetailPage from '@/pages/GoalDetailPage';
+import GoalsPage from '@/pages/GoalsPage';
 import HomePage from '@/pages/HomePage';
 import VideoPage from '@/pages/VideoPage';
 import VideosPage from '@/pages/VideosPage';
@@ -17,11 +19,13 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/videos" element={<VideosPage />} />
             <Route path="/analysis" element={<AnalysisPage />} />
+            <Route path="/goals" element={<GoalsPage />} />
           </Route>
 
           {/* フッタータブなしのページ */}
           <Route path="/daily/:date" element={<DailyPage />} />
           <Route path="/videos/:videoId" element={<VideoPage />} />
+          <Route path="/goals/:goalId" element={<GoalDetailPage />} />
         </Routes>
       </BrowserRouter>
       <ReactQueryDevtools initialIsOpen={false} />

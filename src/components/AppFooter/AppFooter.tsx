@@ -1,4 +1,4 @@
-import { IoHome, IoPlay, IoStatsChart } from 'react-icons/io5';
+import { IoFlag, IoHome, IoPlay, IoStatsChart } from 'react-icons/io5';
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './AppFooter.module.scss';
 
@@ -12,6 +12,7 @@ const tabs: Tab[] = [
   { path: '/', icon: <IoHome />, label: 'ホーム' },
   { path: '/videos', icon: <IoPlay />, label: '動画' },
   { path: '/analysis', icon: <IoStatsChart />, label: '自己分析' },
+  { path: '/goals', icon: <IoFlag />, label: '目標設定' },
 ];
 
 export const AppFooter = () => {

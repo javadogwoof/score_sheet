@@ -10,7 +10,7 @@ interface UpdateGoalParams {
     description?: string;
     priority?: Goal['priority'];
     deadline?: string;
-    completed?: boolean;
+    status?: Goal['status'];
   };
 }
 

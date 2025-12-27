@@ -11,7 +11,7 @@ interface GoalDTO {
   description: string | null;
   priority: string;
   deadline: string;
-  completed: number;
+  status: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -25,7 +25,7 @@ const dtoToGoal = (dto: GoalDTO): Goal => ({
   description: dto.description ?? undefined,
   priority: dto.priority as Goal['priority'],
   deadline: dto.deadline,
-  completed: dto.completed === 1,
+  status: dto.status as Goal['status'],
   createdAt: dto.createdAt,
   updatedAt: dto.updatedAt,
 });
@@ -76,14 +76,14 @@ export const addGoal = async (data: {
   try {
     await retryWithBackoff(() =>
       db.run(
-        'INSERT INTO goals (id, title, description, priority, deadline, completed, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO goals (id, title, description, priority, deadline, status, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [
           goalId,
           data.title,
           data.description ?? null,
           data.priority,
           data.deadline,
-          0,
+          'incomplete',
           now,
           now,
         ],
@@ -106,7 +106,7 @@ export const updateGoal = async (
     description?: string;
     priority?: Goal['priority'];
     deadline?: string;
-    completed?: boolean;
+    status?: Goal['status'];
   },
 ): Promise<void> => {
   const db = getDB();
@@ -130,12 +130,7 @@ export const updateGoal = async (
       data.description !== undefined ? data.description : existing.description,
     priority: data.priority ?? existing.priority,
     deadline: data.deadline ?? existing.deadline,
-    completed:
-      data.completed !== undefined
-        ? data.completed
-          ? 1
-          : 0
-        : existing.completed,
+    status: data.status ?? existing.status,
     updatedAt: Date.now(),
   };
 
@@ -143,13 +138,13 @@ export const updateGoal = async (
   try {
     result = await retryWithBackoff(() =>
       db.run(
-        'UPDATE goals SET title = ?, description = ?, priority = ?, deadline = ?, completed = ?, updatedAt = ? WHERE id = ?',
+        'UPDATE goals SET title = ?, description = ?, priority = ?, deadline = ?, status = ?, updatedAt = ? WHERE id = ?',
         [
           updated.title,
           updated.description,
           updated.priority,
           updated.deadline,
-          updated.completed,
+          updated.status,
           updated.updatedAt,
           goalId,
         ],

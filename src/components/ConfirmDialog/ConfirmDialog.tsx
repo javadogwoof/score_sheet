@@ -7,6 +7,8 @@ interface ConfirmDialogProps {
   message: string;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmText?: string;
+  confirmVariant?: 'notice' | 'warning' | 'alert';
 }
 
 export const ConfirmDialog = ({
@@ -15,6 +17,8 @@ export const ConfirmDialog = ({
   message,
   onConfirm,
   onCancel,
+  confirmText = '削除',
+  confirmVariant = 'alert',
 }: ConfirmDialogProps) => {
   const handleConfirm = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -41,9 +45,9 @@ export const ConfirmDialog = ({
           <button
             type="button"
             onClick={handleConfirm}
-            className={styles.confirmButton}
+            className={`${styles.confirmButton} ${styles[confirmVariant]}`}
           >
-            削除
+            {confirmText}
           </button>
         </div>
       </div>
