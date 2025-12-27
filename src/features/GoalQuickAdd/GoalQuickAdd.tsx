@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import { useState } from 'react';
 import { IoAdd, IoCheckmark, IoClose } from 'react-icons/io5';
 import { Card } from '@/components/Card/Card';
+import { CalendarModal } from '@/components/CalendarModal';
 import type { GoalPriority } from '@/lib/domain/types';
 import styles from './GoalQuickAdd.module.scss';
 
@@ -24,6 +25,7 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
   const [deadline, setDeadline] = useState(
     dayjs().add(1, 'week').format('YYYY-MM-DD'),
   );
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleStartAdd = () => {
     setMode('title');
@@ -41,6 +43,12 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
     setDescription('');
     setPriority('medium');
     setDeadline(dayjs().add(1, 'week').format('YYYY-MM-DD'));
+    setIsCalendarOpen(false);
+  };
+
+  const handleDeadlineSelect = (date: Date) => {
+    setDeadline(dayjs(date).format('YYYY-MM-DD'));
+    setIsCalendarOpen(false);
   };
 
   const handleSave = () => {
@@ -59,19 +67,22 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
 
   if (mode === 'collapsed') {
     return (
-      <button
-        type="button"
-        onClick={handleStartAdd}
-        className={styles.addButton}
-      >
-        <IoAdd className={styles.icon} />
-        <span>目標を追加</span>
-      </button>
+      <div className={styles.floatingContainer}>
+        <button
+          type="button"
+          onClick={handleStartAdd}
+          className={styles.addButton}
+          aria-label="目標を追加"
+        >
+          <IoAdd className={styles.icon} />
+        </button>
+      </div>
     );
   }
 
   return (
-    <Card className={styles.card}>
+    <div className={styles.floatingContainer}>
+      <Card className={styles.card}>
       {/* タイトル入力 */}
       <div className={styles.titleSection}>
         <input
@@ -147,13 +158,13 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
               <label htmlFor="deadline" className={styles.label}>
                 期限
               </label>
-              <input
-                id="deadline"
-                type="date"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className={styles.input}
-              />
+              <button
+                type="button"
+                onClick={() => setIsCalendarOpen(true)}
+                className={styles.dateButton}
+              >
+                {dayjs(deadline).format('YYYY年M月D日')}
+              </button>
             </div>
           </div>
 
@@ -175,6 +186,15 @@ export const GoalQuickAdd = ({ onAdd }: GoalQuickAddProps) => {
           </div>
         </div>
       )}
-    </Card>
+
+      <CalendarModal
+        isOpen={isCalendarOpen}
+        onClose={() => setIsCalendarOpen(false)}
+        onDateSelect={handleDeadlineSelect}
+        selectedDate={dayjs(deadline).toDate()}
+        view="month"
+      />
+      </Card>
+    </div>
   );
 };

@@ -1,33 +1,40 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.goalCard {
-  padding: 16px;
+.goalItem {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid transparent;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #e9ecef;
+  }
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
 }
 
 .title {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   color: #333;
   flex: 1;
 }
 
 .priority {
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: 4px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -45,24 +52,4 @@
 .priorityLow {
   background-color: #e8f4f8;
   color: #0066cc;
-}
-
-.description {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #666;
-  line-height: 1.5;
-  white-space: pre-wrap;
-}
-
-.footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: #999;
-}
-
-.deadline {
-  font-weight: 500;
 }

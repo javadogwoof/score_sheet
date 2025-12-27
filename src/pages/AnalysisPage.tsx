@@ -12,6 +12,7 @@ import { LoadingState } from '@/components/LoadingState';
 import { GoalSection } from '@/features/GoalSection';
 import { PostCard } from '@/features/PostCard';
 import { usePostsByMonthQuery } from '@/hooks/queries/useAllPostsQuery';
+import styles from './AnalysisPage.module.scss';
 
 const AnalysisPage = () => {
   const navigate = useNavigate();
@@ -52,30 +53,36 @@ const AnalysisPage = () => {
       <AppMain>
         <GoalSection />
 
-        {isLoading && <LoadingState />}
-        {error && (
-          <ErrorState
-            message="データの読み込みに失敗しました"
-            onRetry={refetch}
-          />
-        )}
-        {!isLoading && !error && posts.length === 0 && (
-          <EmptyState message="まだ投稿がありません" />
-        )}
-        {!isLoading &&
-          !error &&
-          posts.length > 0 &&
-          posts.map((post) => (
-            <PostCard
-              key={post.id}
-              postId={post.id}
-              postContent={post.content}
-              postCreatedAt={post.createdAt}
-              videoTitle={post.videoTitle}
-              videoDate={post.videoDate}
-              onVideoClick={() => handleVideoClick(post.videoInternalId)}
+        <div className={styles.postsSection}>
+          <h2 className={styles.sectionTitle}>
+            {dayjs(selectedMonth).format('M月の気付き一覧')}
+          </h2>
+
+          {isLoading && <LoadingState />}
+          {error && (
+            <ErrorState
+              message="データの読み込みに失敗しました"
+              onRetry={refetch}
             />
-          ))}
+          )}
+          {!isLoading && !error && posts.length === 0 && (
+            <EmptyState message="まだ投稿がありません" />
+          )}
+          {!isLoading &&
+            !error &&
+            posts.length > 0 &&
+            posts.map((post) => (
+              <PostCard
+                key={post.id}
+                postId={post.id}
+                postContent={post.content}
+                postCreatedAt={post.createdAt}
+                videoTitle={post.videoTitle}
+                videoDate={post.videoDate}
+                onVideoClick={() => handleVideoClick(post.videoInternalId)}
+              />
+            ))}
+        </div>
       </AppMain>
       <CalendarModal
         isOpen={isCalendarOpen}

@@ -6,3 +6,7 @@ export const videoKeys = {
   postsByMonth: (yearMonth: string) =>
     [...videoKeys.all, 'postsByMonth', yearMonth] as const,
 };
+
+export const goalKeys = {
+  all: ['goals'] as const,
+};

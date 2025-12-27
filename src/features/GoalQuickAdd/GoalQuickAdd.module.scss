@@ -1,36 +1,47 @@
+.floatingContainer {
+  position: fixed;
+  bottom: calc(64px + 16px + env(safe-area-inset-bottom, 0px)); // フッタータブ + 余白 + safe area
+  right: 16px;
+  z-index: 100;
+}
+
 .addButton {
-  width: 100%;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border: 2px dashed #ddd;
-  border-radius: 8px;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  background-color: #007bff;
+  border: none;
+  border-radius: 50%;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  color: #666;
-  font-size: 16px;
-  font-weight: 600;
+  color: white;
+  font-size: 24px;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
   transition: all 0.2s;
 
   &:hover {
-    background-color: #e9ecef;
-    border-color: #007bff;
-    color: #007bff;
+    background-color: #0056b3;
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+    transform: translateY(-2px);
   }
 
   &:active {
-    background-color: #dee2e6;
+    background-color: #004494;
+    transform: translateY(0);
   }
 }
 
 .icon {
-  font-size: 20px;
+  font-size: 28px;
 }
 
 .card {
   padding: 16px;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 .titleSection {
@@ -108,7 +119,8 @@
 
 .textarea,
 .input,
-.select {
+.select,
+.dateButton {
   padding: 10px;
   font-size: 14px;
   border: 1px solid #ddd;
@@ -119,6 +131,21 @@
   &:focus {
     outline: none;
     border-color: #007bff;
+  }
+}
+
+.dateButton {
+  width: 100%;
+  background-color: white;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #999;
+  }
+
+  &:active {
+    background-color: #f8f9fa;
   }
 }
 
