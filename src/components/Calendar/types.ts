@@ -18,4 +18,14 @@ export interface CalendarProps {
    * ロケール（デフォルト: ja-JP）
    */
   locale?: string;
+
+  /**
+   * 現在の月を外部から制御
+   */
+  value?: Date;
+
+  /**
+   * カレンダーの表示月が変更されたときのコールバック
+   */
+  onActiveStartDateChange?: (date: Date) => void;
 }

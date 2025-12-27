@@ -11,10 +11,24 @@ import type { CalendarProps } from './types';
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
 
-export const Calendar = ({ onDateSelect }: CalendarProps) => {
+export const Calendar = ({
+  onDateSelect,
+  value,
+  onActiveStartDateChange,
+}: CalendarProps) => {
   const handleChange = (newValue: Value) => {
     if (newValue instanceof Date) {
       onDateSelect(newValue);
+    }
+  };
+
+  const handleActiveStartDateChange = ({
+    activeStartDate,
+  }: {
+    activeStartDate: Date | null;
+  }) => {
+    if (activeStartDate && onActiveStartDateChange) {
+      onActiveStartDateChange(activeStartDate);
     }
   };
 
@@ -24,6 +38,8 @@ export const Calendar = ({ onDateSelect }: CalendarProps) => {
       locale={'ja-JP'}
       onClickDay={handleChange}
       formatDay={(_locale, day) => day.getDate().toString()}
+      value={value}
+      onActiveStartDateChange={handleActiveStartDateChange}
     />
   );
 };

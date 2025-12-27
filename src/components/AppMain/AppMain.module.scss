@@ -4,4 +4,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding-bottom: calc(64px + 20px); // フッター高さ + パディング
+  overflow-y: auto;
 }

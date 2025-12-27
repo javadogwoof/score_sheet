@@ -1,0 +1,1 @@
+export { MonthlyPostItem } from './MonthlyPostItem';
