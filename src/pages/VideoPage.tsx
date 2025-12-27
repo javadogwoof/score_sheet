@@ -60,14 +60,7 @@ const VideoPage = () => {
   const confirmDeleteVideo = () => {
     if (videoId) {
       deleteVideoMutation.mutate(videoId, {
-        onSuccess: () => {
-          // DailyPageに戻る
-          if (video?.date) {
-            navigate(`/daily/${video.date}`);
-          } else {
-            navigate('/');
-          }
-        },
+        onSuccess: () => navigate(-1),
       });
     }
   };
