@@ -15,6 +15,7 @@ export const useDeleteVideoMutation = () => {
         queryKey: videoKeys.all,
         predicate: (query) => query.queryKey[1] === 'byDate',
       });
+      queryClient.invalidateQueries({ queryKey: videoKeys.allPosts() });
     },
   });
 };

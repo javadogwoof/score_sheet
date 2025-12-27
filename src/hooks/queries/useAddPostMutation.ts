@@ -51,6 +51,7 @@ export const useAddPostMutation = (videoId: string) => {
     // 成功時: DBから正しいデータを再取得
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: videoKeys.byId(videoId) });
+      queryClient.invalidateQueries({ queryKey: videoKeys.allPosts() });
     },
 
     // エラー時: ロールバック

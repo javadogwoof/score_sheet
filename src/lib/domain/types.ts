@@ -3,6 +3,16 @@ export interface Post {
   content: string;
 }
 
+// 自己分析ページで扱う投稿の詳細情報
+export interface PostDetail {
+  id: string;
+  content: string;
+  createdAt: number;
+  videoId: string;
+  videoTitle: string;
+  videoDate: string;
+}
+
 // DailyPageで扱う軽量なメタデータ
 export interface VideoSummary {
   id: string;

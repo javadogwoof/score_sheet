@@ -12,6 +12,7 @@ export const useDeletePostMutation = (videoId: string) => {
     onSuccess: () => {
       // 該当Videoのキャッシュを無効化
       queryClient.invalidateQueries({ queryKey: videoKeys.byId(videoId) });
+      queryClient.invalidateQueries({ queryKey: videoKeys.allPosts() });
     },
   });
 };

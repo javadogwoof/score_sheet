@@ -19,6 +19,9 @@ export const useUpdateVideoTitleMutation = (videoId: string) => {
         queryKey: videoKeys.all,
         predicate: (query) => query.queryKey[1] === 'byDate',
       });
+
+      // 自己分析ページのキャッシュも更新
+      queryClient.invalidateQueries({ queryKey: videoKeys.allPosts() });
     },
   });
 };

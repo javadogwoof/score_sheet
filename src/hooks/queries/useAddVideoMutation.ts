@@ -35,6 +35,7 @@ export const useAddVideoMutation = () => {
     onSuccess: ({ date }) => {
       // キャッシュを無効化して再取得（シンプルな方法）
       queryClient.invalidateQueries({ queryKey: videoKeys.byDate(date) });
+      queryClient.invalidateQueries({ queryKey: videoKeys.allPosts() });
     },
   });
 };

@@ -1,6 +1,6 @@
 import type { capSQLiteChanges } from '@capacitor-community/sqlite';
 import { getDB } from '../db';
-import type { Video, VideoSummary } from '../domain/types';
+import type { PostDetail, Video, VideoSummary } from '../domain/types';
 import { NotFoundError, RetryableError } from '../errors';
 import { retryWithBackoff } from '../retry';
 
@@ -257,5 +257,51 @@ export const deleteVideo = async (videoId: string): Promise<void> => {
   // リトライ後に存在チェック（リトライ不要なエラー）
   if (result.changes?.changes === 0) {
     throw new NotFoundError('Video', videoId);
+  }
+};
+
+/**
+ * 全投稿を動画情報と一緒に取得（新しい順）
+ */
+export const getAllPosts = async (): Promise<PostDetail[]> => {
+  try {
+    return await retryWithBackoff(async () => {
+      const db = getDB();
+
+      // 投稿と動画情報をJOINして取得
+      const result = await db.query(
+        `SELECT
+          posts.id,
+          posts.contents,
+          posts.createdAt,
+          videos.videoId,
+          videos.title as videoTitle,
+          videos.date as videoDate
+        FROM posts
+        INNER JOIN videos ON posts.videoId = videos.id
+        ORDER BY posts.createdAt DESC`,
+        [],
+      );
+
+      const posts = (result.values || []) as Array<{
+        id: string;
+        contents: string;
+        createdAt: number;
+        videoId: string;
+        videoTitle: string;
+        videoDate: string;
+      }>;
+
+      return posts.map((post) => ({
+        id: post.id,
+        content: post.contents,
+        createdAt: post.createdAt,
+        videoId: post.videoId,
+        videoTitle: post.videoTitle,
+        videoDate: post.videoDate,
+      }));
+    });
+  } catch (_error) {
+    throw new RetryableError('Failed to get all posts');
   }
 };
